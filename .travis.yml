@@ -1,0 +1,36 @@
+---
+sudo: required
+dist: trusty
+env:
+  global:
+    - COPS_ROOT="$TRAVIS_BUILD_DIR/local/corpusops.bootstrap"
+  matrix:
+    - IMAGE="packer__5.4.0.json" DOCKER_IMAGE="corpusops/elasticsearch:5.4.0"
+    - IMAGE="packer__2.3.3.json" DOCKER_IMAGE="corpusops/elasticsearch:2.3.3"
+language: python
+python: "2.7"
+before_install:
+  - sudo apt-get update -qq
+  - sudo service docker stop
+  - |
+    set -ex
+    git clone https://github.com/corpusops/corpusops.bootstrap $COPS_ROOT
+    cd $COPS_ROOT
+    bin/install.sh -C -S
+    if ! bin/install.sh -C --synchronize-code;then
+      rm -rf $COPS_ROOT/roles/corpusops.roles $COPS_ROOT/playbooks/corpusops
+      bin/install.sh -C --synchronize-code
+    fi
+install:
+  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/localsettings_packer/role.yml
+  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/services_virt_docker/role.yml
+script:
+  - cd COPS_ROOT="$TRAVIS_BUILD_DIR" &&\
+      bin/build.sh --images $IMAGE
+after_success:
+  - DEBUG=1 $COPS_ROOT/hacking/docker_release $DOCKER_IMAGE
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $COPS_ROOT
+

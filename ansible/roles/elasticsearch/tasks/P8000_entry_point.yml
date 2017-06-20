@@ -1,0 +1,18 @@
+- name: configs
+  template:
+    dest: "{{item.dest}}"
+    src: "{{item.src|default('../templates{0}'.format(item.dest))}}"
+    mode: "{{item.mode|default(omit)}}"
+    force: "{{item.force|default(True)}}"
+    owner: "{{item.owner|default(omit)}}"
+    group: "{{item.group|default(omit)}}"
+  with_list: "{{cops_elasticsearch_ep_configs}}"
+  vars:
+    ep_playbook: "{{cops_elasticsearch_ep_playbook}}"
+    ep_tags: "{{cops_elasticsearch_ep_tags}}"
+    ep_skip_tags: "{{cops_elasticsearch_ep_skip_tags}}"
+    ep_main_ep: "{{cops_elasticsearch_ep_main_ep}}"
+    ep_services: "{{cops_elasticsearch_services}}"
+  tags: [elasticsearch,
+         entrypoint_configs,
+         elasticsearch_entrypoint_configs]

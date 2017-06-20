@@ -1,0 +1,24 @@
+---
+- include_role: {name: "corpusops.roles/services_http_nginx"}
+  tags: [elasticsearch,
+         reverseproxy, reverseproxy_install,
+         elasticsearch_reverseproxy, elasticsearch_reverseproxy_install]
+- htpasswd:
+    path: "{{cops_elasticsearch_vars.htpasswd}}"
+    name: "{{item.key}}"
+    password: "{{item.value.password}}"
+    state: present
+  with_dict: "{{cops_elasticsearch_vars.users}}"
+  when: "(cops_elasticsearch_vars.users is not none and
+          cops_elasticsearch_vars.users.keys()|length > 0)"
+  tags: [elasticsearch,
+         reverseproxy, reverseproxy_users,
+         elasticsearch_reverseproxy, elasticsearch_reverseproxy_users]
+- include_role:
+    name: "corpusops.roles/nginx_vhost"
+    private: true
+  vars:
+    corpusops_nginx_vhost: "{{cops_elasticsearch_vars.nginx}}"
+  tags: [elasticsearch,
+         reverseproxy, reverseproxy_config,
+         elasticsearch_reverseproxy, elasticsearch_reverseproxy_config]
