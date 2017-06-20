@@ -1,0 +1,38 @@
+---
+- name: fixperms files
+  template:
+    dest: "{{item.dest}}"
+    src: "{{item.src|default('../templates{0}'.format(item.dest))}}"
+    force: "{{item.force|default(True)}}"
+    mode: "{{item.mode|default(omit)}}"
+    owner: "{{item.owner|default(omit)}}"
+    group: "{{item.group|default(omit)}}"
+  with_list: "{{cops_elasticsearch_vars.fixperms_configs}}"
+  tags: [elasticsearch,
+         fixperms, fixperms_configs,
+         elasticsearch_fixperms, elasticsearch_fixperms_configs]
+- name: run fixperms
+  shell: "{{cops_elasticsearch_vars.fixperms}}"
+  changed_when: false
+  tags: [elasticsearch,
+         fixperms, fixperms_run
+         elasticsearch_fixperms, elasticsearch_fixperms_run]
+- name: add fixperms cron
+  when: "(cops_elasticsearch_vars.fixperms_cron_periodicity | copsf_bool)"
+  copy:
+    dest: "{{cops_elasticsearch_vars.fixperms_cron}}"
+    force: true
+    mode: "0644"
+    content: |
+      {{cops_elasticsearch_vars.fixperms_cron_periodicity}} root {{cops_elasticsearch_vars.fixperms}} >/dev/null 2>&1
+  tags: [elasticsearch,
+         fixperms, fixperms_configs,
+         elasticsearch_fixperms, elasticsearch_fixperms_configs]
+- name: remove fixperms cron
+  when: "not (cops_elasticsearch_vars.fixperms_cron_periodicity | copsf_bool)"
+  file:
+    path: "{{cops_elasticsearch_vars.fixperms_cron}}"
+    state: absent
+  tags: [elasticsearch,
+         fixperms, fixperms_configs,
+         elasticsearch_fixperms, elasticsearch_fixperms_configs]

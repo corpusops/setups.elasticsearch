@@ -1,0 +1,16 @@
+---
+- group:
+    name: "{{cops_elasticsearch_vars.group}}"
+    state: present
+  tags: [elasticsearch,
+         group, elasticsearch_group,
+         users, elasticsearch_users]
+- user:
+    group: "{{cops_elasticsearch_vars.group}}"
+    name: "{{cops_elasticsearch_vars.user}}"
+    state: present
+    append: true
+    generate_ssh_key: true
+  tags: [elasticsearch,
+         user, elasticsearch_user,
+         users, elasticsearch_users]
