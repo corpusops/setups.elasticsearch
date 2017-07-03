@@ -22,7 +22,7 @@ before_install:
       bin/install.sh -C --synchronize-code
     fi
 install:
-  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/localsettings/packer/role.yml
+  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/localsettings_packer/role.yml
   - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/services_virt_docker/role.yml
 script:
   - cd COPS_ROOT="$TRAVIS_BUILD_DIR" &&\
