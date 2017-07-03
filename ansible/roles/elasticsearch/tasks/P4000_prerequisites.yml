@@ -1,0 +1,73 @@
+---
+- name: update & install prerequisites
+  package:
+    cache_valid_time: '{{60*60}}'
+    update_cache: yes
+    package: '{{item}}'
+    state: present
+  when: "(ansible_os_family.lower() in ['debian'] and
+          cops_elasticsearch_vars.deb_packages is not none and
+          cops_elasticsearch_vars.deb_packages|length > 0)"
+  with_items: "{{cops_elasticsearch_vars.deb_packages}}"
+  tags: [elasticsearch,
+         sys_packages, prerequisites_sys_packages,
+         elasticsearch_prerequisites_sys_packages]
+- name: update & install prerequisites
+  package:
+    update_cache: yes
+    enablerepo: epel,epel-testing
+    package: '{{item}}'
+    state: present
+  when: "(ansible_os_family.lower() in ['redhat'] and
+          cops_elasticsearch_vars.rh_packages is not none and
+          cops_elasticsearch_vars.rh_packages|length > 0)"
+  with_items: "{{cops_elasticsearch_vars.rh_packages}}"
+  tags: [elasticsearch,
+         sys_packages, prerequisites_sys_packages,
+         elasticsearch_prerequisites_sys_packages]
+# Install a jdk (oracle)
+- include_role:
+    name: "corpusops.roles/localsettings_jdk"
+  tags: [elasticsearch,
+         jdk_install, prerequisites_jdk_install
+         elasticsearch_prerequisites_jdk_install]
+- stat:
+    path: "{{cops_elasticsearch_sha1file}}"
+  register: cops_elasticsearch_sha1test
+  tags: [elasticsearch,
+         archive, prerequisites_archive,
+         elasticsearch_prerequisites_archive]
+# get elasticsearch archive sha checksum
+- name: get archive - SHA CRC
+  get_url:
+    url: "{{cops_elasticsearch_sha1_url}}"
+    dest: "{{cops_elasticsearch_sha1file}}"
+  become: yes
+  become_user: "{{cops_elasticsearch_vars.user}}"
+  when: "(cops_elasticsearch_vars.sha1_verify and
+          not cops_elasticsearch_sha1test.stat.exists)"
+  tags: [elasticsearch,
+         archive, prerequisites_archive,
+         elasticsearch_prerequisites_archive]
+- set_fact:
+    app_sha1v: "{{lookup('file', cops_elasticsearch_sha1file)}}"
+  when: "cops_elasticsearch_vars.sha1_verify"
+  tags: [elasticsearch,
+         archive, prerequisites_archive,
+         elasticsearch_prerequisites_archive]
+# Download, unpack, link elasticsearch release tarball
+- include_role: {name: corpusops.roles/install_archive}
+  become: yes
+  become_user: "{{cops_elasticsearch_vars.user}}"
+  vars:
+    archive:
+      filetest: "{{cops_elasticsearch_vars.filetest}}"
+      archive: "{{cops_elasticsearch_vars.tb}}"
+      app_path: "{{cops_elasticsearch_vars.real_root}}"
+      urls:
+        archive: "{{cops_elasticsearch_url}}"
+        archive_crc: "{{app_sha1v}}"
+        verify_sha1: "{{cops_elasticsearch_vars.sha1_verify}}"
+  tags: [elasticsearch,
+         archive, prerequisites_archive,
+         elasticsearch_prerequisites_archive]
