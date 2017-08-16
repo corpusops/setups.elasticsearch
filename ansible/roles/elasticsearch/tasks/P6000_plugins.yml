@@ -23,6 +23,6 @@
   notify: "{{cops_elasticsearch_vars.rhandlers}}"
   become: yes
   become_user: "{{cops_elasticsearch_vars.user}}"
-  changed_when: "{{'Installed plugin' in cops_elasticsearch_plugins_install.stderr}}"
+  changed_when: "'Installed plugin' in cops_elasticsearch_plugins_install.stderr"
   tags: [elasticsearch, plugins, elasticsearch_plugins]
 

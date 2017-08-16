@@ -3,6 +3,7 @@
         "_p": "/provision_dir",
         "ansible_playbook": "/srv/corpusops/corpusops.bootstrap/bin/ansible-playbook",
         "ansible_args": "-vvvvv -c local -i localhost,",
+        "DO_UP": "",
         "ansible_folder": "ansible",
         "ansible_play": "site.yml",
         "tag": "corpusops/elasticsearch:2.3.3",
@@ -25,9 +26,9 @@
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-v", "{{pwd}}:{{user  `_p`}}.in:ro",
             "--security-opt", "seccomp=unconfined",
-            "-e COPS_IMGTAG={{user `tag`}}",
-            "-e COPS_IMG={{user `tag_image`}}",
-            "-e COPS_IMGVER={{user `tag_version`}}",
+            "-e", "COPS_IMGTAG={{user `tag`}}",
+            "-e", "COPS_IMG={{user `tag_image`}}",
+            "-e", "COPS_IMGVER={{user `tag_version`}}",
             "-d", "-i", "-t",
             "--name", "{{user `docker_name`}}",
             "{{.Image}}", "{{user `img_entrypoint`}}"
@@ -40,7 +41,7 @@
             "CMD bash",
             "VOLUME {{user `volumes`}}",
             "LABEL maintainer \"{{user `author`}}\"",
-            "ENTRYPOINT [{{user `entrypoint`}}]"
+            "ENTRYPOINT {{user `entrypoint`}}"
         ]
     }],
     "provisioners":[
@@ -60,7 +61,8 @@
             "ANSIBLE_PLAY={{user `ansible_play`}}",
             "ANSIBLE_FOLDER={{user `ansible_folder`}}",
             "ANSIBLE_ARGS={{user `ansible_args`}}",
-            "RSYNC_OPTS={{user `provisiondir_rsync_opts`}}"
+            "RSYNC_OPTS={{user `provisiondir_rsync_opts`}}",
+            "DO_UP={{user `DO_UP`}}"
         ],
         "script": "docker/provision.sh"
     }],

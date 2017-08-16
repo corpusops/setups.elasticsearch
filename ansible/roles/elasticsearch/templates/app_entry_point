@@ -12,7 +12,6 @@ if [[ -z ${NO_CONFIG-} ]];then
     /srv/corpusops/corpusops.bootstrap/bin/cops_apply_role \
         $ANSIBLE_VARARGS \
         -vvvv {{ep_playbook}} \
-        --tags={{ep_tags}} \
         --skip-tags={{ep_skip_tags}}
 fi
 

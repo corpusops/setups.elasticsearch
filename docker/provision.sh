@@ -12,11 +12,16 @@ do_install() {
         -e @/tmp/ansible_params.yml \
         $ANSIBLE_FOLDER/$ANSIBLE_PLAY
 }
+apt update
 do_up() {
     log "Upgrading corpusops as first try failed"
     cd "$COPS_ROOT"
     bin/install.sh -C -s
 }
+if [[ -n ${DO_UP-} ]] && ! do_up;then
+    log "do re-upgrade failed"
+    exit 3
+fi
 if do_install;then
     log "installed"
 elif [ "x${COPS_ROOT}" != x"" ];then

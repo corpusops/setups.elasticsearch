@@ -1,4 +1,5 @@
 ---
+corpusops_core_projects_path: /srv/projects
 # app version
 #cops_elasticsearch_version: '5.4.2'
 cops_elasticsearch_version: '2.3.3'
@@ -8,8 +9,13 @@ cops_elasticsearch_users:
   admin:
     password: "{{
         lookup('password',
-                (cops_elasticsearch_cfg+'/pwd_admin length=15 chars=ascii_letters,digits')) }}"
+                (cops_elasticsearch_cfg+'/pwd_admin '
+                 'length=15 chars=ascii_letters,digits')) }}"
 # app settings
+cops_elasticsearch_query_host: "{% if '_local_' in cops_elasticsearch_bind_host
+  %}127.0.0.1{% elif '_site_' in cops_elasticsearch_bind_host
+  %}{{ansible_fqdn}}{% else
+  %}{{cops_elasticsearch_bind_host}}{%endif%}"
 cops_elasticsearch_deb_packages: [apache2-utils, python-passlib]
 cops_elasticsearch_rh_paackages: [httpd-tools, python-passlib]
 cops_elasticsearch_name: 'elasticsearch'
@@ -33,7 +39,7 @@ cops_elasticsearch_logs: "{{cops_elasticsearch_data_root}}/logs"
 cops_elasticsearch_cfg: "{{cops_elasticsearch_data_root}}/config"
 cops_elasticsearch_data: "{{cops_elasticsearch_data_root}}/data"
 cops_elasticsearch_tmp: "{{cops_elasticsearch_data_root}}/tmp"
-cops_elasticsearch_bind_host: "127.0.0.1"
+cops_elasticsearch_bind_host: "_local_,_site_"
 cops_elasticsearch_sha1_verify: true
 # defaults to 'default' or can be selected 'version major'
 cops_elasticsearch_plugins:
@@ -112,8 +118,10 @@ cops_elasticsearch_jvmoptions: "../templates/jvm.options"
 cops_elasticsearch_ep_template: "../templates/app_entry_point"
 # entrypoint settings
 cops_elasticsearch_ep_playbook: "ansible/site.yml"
-cops_elasticsearch_ep_tags: "vars,layout,worker_configs,reverse_proxy,end_fixperms"
-cops_elasticsearch_ep_skip_tags: "reverseproxy_install,jdk_install"
+cops_elasticsearch_ep_skip_tags: "{{(
+  'reverseproxy_install,jdk_install,'
+  'es_users,es_first_fixperms,es_prerequisites,es_plugins,es_entry_point'
+  )}}"
 cops_elasticsearch_ep_main_ep: "/entry_point"
 # service
 cops_elasticsearch_service_cmd: "{{cops_elasticsearch_root}}/bin/run.sh"
@@ -124,11 +132,13 @@ cops_elasticsearch_activated: true
 cops_elasticsearch_limits_nofile: 65536
 cops_elasticsearch_limits_nproc: 4096
 # Reverse proxy
+cops_elasticsearch_default_vhost_is_default_server: false
 cops_elasticsearch_htpasswd: "/etc/nginx/{{cops_elasticsearch_name}}-htpasswd"
 cops_elasticsearch_ssl_protected: false
 cops_elasticsearch_nginx: {}
 cops_elasticsearch_nginx_domain: "{{ansible_fqdn}}"
 cops_elasticsearch_nginx_basename: "corpus-{{cops_elasticsearch_name}}"
+cops_elasticsearch_nginx_is_default_server: true
 cops_elasticsearch_nginx_ssl_protected: "{{cops_elasticsearch_ssl_protected}}"
 cops_elasticsearch_nginx_htpasswd: "{{cops_elasticsearch_htpasswd}}"
 cops_elasticsearch_nginx_force_reload: true

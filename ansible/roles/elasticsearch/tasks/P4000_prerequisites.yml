@@ -60,7 +60,7 @@
   become: yes
   become_user: "{{cops_elasticsearch_vars.user}}"
   vars:
-    archive:
+    _archive:
       filetest: "{{cops_elasticsearch_vars.filetest}}"
       archive: "{{cops_elasticsearch_vars.tb}}"
       app_path: "{{cops_elasticsearch_vars.real_root}}"

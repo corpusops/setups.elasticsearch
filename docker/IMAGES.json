@@ -1,11 +1,11 @@
 {
   "images": [
     {
-      "builder_type": "packer", 
+      "builder_type": "packer",
       "file": "2.3.3.json"
-    }, 
+    },
     {
-      "builder_type": "packer", 
+      "builder_type": "packer",
       "file": "5.4.0.json"
     }
   ]

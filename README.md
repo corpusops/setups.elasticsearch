@@ -20,11 +20,11 @@ to an underlying elasticsearch worker.
     cat >local/setup/reconfigure.yml << EOF
     ---
     cops_es_env:
-    ES_HTTP_PORT: 9200
+      ES_HTTP_PORT: 9200
     EOF
     ```
-- Attention, on the first run, the ``data`` directory **MUST BE EMPTY**
-- pull/run
+- On the first run, the ``data`` directory **MUST BE EMPTY**
+- To pull/run this image
 
     ```sh
     # docker pull corpusops/elasticsearch:<TAG>

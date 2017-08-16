@@ -20,7 +20,7 @@
   tags: [elasticsearch, workers_configs,
          elasticsearch_workers_configs]
 - uri:
-    url: "http://{{cops_elasticsearch_vars.bind_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
+    url: "http://{{cops_elasticsearch_vars.query_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
     return_content: true
   when: "(corpusops_vars.has_services_manager and
           cops_elasticsearch_vars.activated)"

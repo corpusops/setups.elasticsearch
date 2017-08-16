@@ -25,8 +25,7 @@ install:
   - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/localsettings_packer/role.yml
   - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/services_virt_docker/role.yml
 script:
-  - cd COPS_ROOT="$TRAVIS_BUILD_DIR" &&\
-      bin/build.sh --images $IMAGE
+  - cd "$TRAVIS_BUILD_DIR" && bin/build.sh --images $IMAGE
 after_success:
   - DEBUG=1 $COPS_ROOT/hacking/docker_release $DOCKER_IMAGE
 cache:
