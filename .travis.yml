@@ -3,7 +3,17 @@ sudo: required
 dist: trusty
 env:
   global:
-    - COPS_ROOT="$TRAVIS_BUILD_DIR/local/corpusops.bootstrap"
+    - |
+      COPS_URL="https://github.com/corpusops/corpusops.bootstrap" \
+      COPS_ROOT="$TRAVIS_BUILD_DIR/local/corpusops.bootstrap" \
+      funcs="$COPS_ROOT/bin/cops_shell_common" \
+      silent="$funcs output_in_error silent_vv" \
+      apply_role="sudo -E $silent $COPS_ROOT/bin/cops_apply_role -vvvvv" \
+      install="sudo -E $silent $COPS_ROOT/bin/install.sh" \
+      sync_code="$install -C --synchronize-code --skip-sync-core" \
+      release="$COPS_ROOT/hacking/docker_release $DOCKER_IMAGE" \
+      silent_rm="$silent rm -rf"
+    - RELEASE_DEBUG=1
   matrix:
     - IMAGE="packer__5.4.0.json" DOCKER_IMAGE="corpusops/elasticsearch:5.4.0"
     - IMAGE="packer__2.3.3.json" DOCKER_IMAGE="corpusops/elasticsearch:2.3.3"
@@ -12,22 +22,25 @@ python: "2.7"
 before_install:
   - sudo apt-get update -qq
   - sudo service docker stop
-  - |
-    set -ex
-    git clone https://github.com/corpusops/corpusops.bootstrap $COPS_ROOT
-    cd $COPS_ROOT
-    bin/install.sh -C -S
-    if ! bin/install.sh -C --synchronize-code;then
-      rm -rf $COPS_ROOT/roles/corpusops.roles $COPS_ROOT/playbooks/corpusops
-      bin/install.sh -C --synchronize-code
-    fi
+  - "[ -e $COPS_ROOT/.git ] || git clone $COPS_URL $COPS_ROOT"
+  - cd $COPS_ROOT
+  - git fetch origin && git reset --hard origin/master
+  - $install -C -S
+  - $sync_code || ( $silent_rm $COPS_ROOT/{roles,playbooks}/corpusops* && $sync_code )
 install:
-  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/localsettings_packer/role.yml
-  - cd $COPS_ROOT && sudo -E bin/cops_apply_role -vvvvv roles/corpusops.roles/services_virt_docker/role.yml
+  - cd $COPS_ROOT
+  - sh -c "$apply_role roles/corpusops.roles/localsettings_packer/role.yml"
+  - sh -c "$apply_role roles/corpusops.roles/services_virt_docker/role.yml"
 script:
-  - cd "$TRAVIS_BUILD_DIR" && bin/build.sh --images $IMAGE
+  - cd "$TRAVIS_BUILD_DIR" && $silent bin/build.sh --images $IMAGE
 after_success:
-  - DEBUG=1 $COPS_ROOT/hacking/docker_release $DOCKER_IMAGE
+  - docker images
+  - |
+    if [ "x$RELEASE_DEBUG" = "x" ];then
+      DEBUG=1 $funcs vv $release
+    else
+      $silent $release
+    fi
 cache:
   directories:
     - $HOME/.cache/pip
