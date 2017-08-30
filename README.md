@@ -56,7 +56,6 @@ to an underlying elasticsearch worker.
     - ``./docker``
     - ``./bin/env.sh``
     - ``./bin/build.sh``
-- Create & feed ``docker/VERSIONS``
 - Delete ``docker/packer``
 - Maybe adapt ``bin/buid.sh``
 - Maybe adapt ``docker/provision.sh``
@@ -64,11 +63,10 @@ to an underlying elasticsearch worker.
 - Edit/adapt ``docker/packer.json``
     - take care that the ``__VERSION__`` placeholder is used correcly
     - edit the inline shell script to adapt the generated ``ansible_params.yml``
-      ansible variable
-      file accordingly to your provision playbooks & roles.
+      ansible variable file accordingly to your provision playbooks & roles.
 - Launch until success bin/build.sh which launch [docker_build_chain](https://github.com/corpusops/corpusops.bootstrap/blob/master/hacking/docker_build_chain.py) ([doc](https://github.com/corpusops/corpusops.bootstrap/blob/master/doc/docker_build_chain.md))
+- Create & feed ``docker/IMAGES.json``
 - Verify after build:
-    - generated: ``docker/IMAGES.json``
     - generated: ``docker/packer/*.json``
     - produced docker images
 
