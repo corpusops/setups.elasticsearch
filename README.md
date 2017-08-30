@@ -51,22 +51,6 @@ to an underlying elasticsearch worker.
 - You may use directly this role to provision elasticsearch on another host type.
 
 ### Steps to create cops docker compliant images
-- Copy/adapt from another image:
-    - ``./ansible``
-    - ``./docker``
-    - ``./bin/env.sh``
-    - ``./bin/build.sh``
-- Delete ``docker/packer``
-- Maybe adapt ``bin/buid.sh``
-- Maybe adapt ``docker/provision.sh``
-- Feed ``ansible/``
-- Edit/adapt ``docker/packer.json``
-    - take care that the ``__VERSION__`` placeholder is used correcly
-    - edit the inline shell script to adapt the generated ``ansible_params.yml``
-      ansible variable file accordingly to your provision playbooks & roles.
-- Launch until success bin/build.sh which launch [docker_build_chain](https://github.com/corpusops/corpusops.bootstrap/blob/master/hacking/docker_build_chain.py) ([doc](https://github.com/corpusops/corpusops.bootstrap/blob/master/doc/docker_build_chain.md))
-- Create & feed ``docker/IMAGES.json``
-- Verify after build:
-    - generated: ``docker/packer/*.json``
-    - produced docker images
+- We use via  bin/build.sh which launch [docker_build_chain](https://github.com/corpusops/corpusops.bootstrap/blob/master/hacking/docker_build_chain.py) ([doc](https://github.com/corpusops/corpusops.bootstrap/blob/master/doc/docker_build_chain.md#sumup-steps-to-create-corpusops-docker-compliant-images))
+
 
