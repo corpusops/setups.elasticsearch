@@ -2,9 +2,8 @@
 set -ex
 rsync $RSYNC_OPTS "$_P.in/" "$_P/"
 export ANSIBLE_FORCE_COLOR=1 PYTHONUNBUFFERED=1
-log () {
-    echo "${@}" >&2
-}
+log() { echo "${@}" >&2; }
+vv() { log "$@"; "$@"; }
 do_install() {
     cd "$_P"
     $ANSIBLE_PLAYBOOK \
@@ -39,5 +38,11 @@ else
     log "fail install"
     exit 5
 
+fi
+if [[ -n ${DO_CONTAINER_STRIP-} ]] && \
+    [ -e /sbin/cops_container_strip.sh ] && \
+    ! vv /sbin/cops_container_strip.sh;then
+    log "do container strip failed"
+    exit 6
 fi
 # vim:set et sts=4 ts=4 tw=80:

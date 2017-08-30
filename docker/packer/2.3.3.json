@@ -4,6 +4,7 @@
         "ansible_playbook": "/srv/corpusops/corpusops.bootstrap/bin/ansible-playbook",
         "ansible_args": "-vvvvv -c local -i localhost,",
         "DO_UP": "",
+        "DO_CONTAINER_STRIP": "1",
         "ansible_folder": "ansible",
         "ansible_play": "site.yml",
         "tag": "corpusops/elasticsearch:2.3.3",
@@ -62,7 +63,8 @@
             "ANSIBLE_FOLDER={{user `ansible_folder`}}",
             "ANSIBLE_ARGS={{user `ansible_args`}}",
             "RSYNC_OPTS={{user `provisiondir_rsync_opts`}}",
-            "DO_UP={{user `DO_UP`}}"
+            "DO_UP={{user `DO_UP`}}",
+            "DO_CONTAINER_STRIP={{user `DO_CONTAINER_STRIP`}}"
         ],
         "script": "docker/provision.sh"
     }],
