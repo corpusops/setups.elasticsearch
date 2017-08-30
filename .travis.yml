@@ -11,7 +11,7 @@ env:
       apply_role="sudo -E $silent $COPS_ROOT/bin/cops_apply_role -vvvvv" \
       install="sudo -E $silent $COPS_ROOT/bin/install.sh" \
       sync_code="$install -C --synchronize-code --skip-sync-core" \
-      release="$COPS_ROOT/hacking/docker_release \$DOCKER_IMAGE" \
+      release="$COPS_ROOT/hacking/docker_release" \
       silent_rm="$silent rm -rf"
     - RELEASE_DEBUG=1
   matrix:
@@ -37,9 +37,9 @@ after_success:
   - docker images
   - |
     if [ "x$RELEASE_DEBUG" = "x" ];then
-      DEBUG=1 $funcs vv $release
+      DEBUG=1 $funcs vv $release $DOCKER_IMAGE
     else
-      $silent $release
+      $silent $release $DOCKER_IMAGE
     fi
 cache:
   directories:
