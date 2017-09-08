@@ -13,10 +13,15 @@ env:
       sync_code="$install -C --synchronize-code --skip-sync-core" \
       release="$COPS_ROOT/hacking/docker_release" \
       silent_rm="$silent rm -rf"
-    - RELEASE_DEBUG=1
+    - RELEASE_DEBUG=""
+    -__NAME__="elasticsearch"
   matrix:
-    - IMAGE="packer__5.4.0.json" DOCKER_IMAGE="corpusops/elasticsearch:5.4.0"
-    - IMAGE="packer__2.3.3.json" DOCKER_IMAGE="corpusops/elasticsearch:2.3.3"
+    - __VERSION__="5.4.0" \
+      IMAGE="packer__${IMAGE_VERSION.json" \
+      DOCKER_IMAGE="corpusops/${__NAME__}:${__VERSION__}"
+    - __VERSION__="2.3.3" \
+      IMAGE="packer__${IMAGE_VERSION.json" \
+      DOCKER_IMAGE="corpusops/${__NAME__}:${__VERSION__}"
 language: python
 python: "2.7"
 before_install:

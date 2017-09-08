@@ -1,0 +1,21 @@
+---
+- include: A0000_vars.yml
+  tags: [elasticsearch, vars, elasticsearch_vars]
+- include: P1000_users.yml
+  tags: [elasticsearch, users, elasticsearch_users]
+- include: P2000_layout.yml
+  tags: [elasticsearch, layout, elasticsearch_layout]
+- include: G9000_fixperms.yml
+  tags: [elasticsearch, first_fixperms, elasticsearch_first_fixperms]
+- include: P4000_prerequisites.yml
+  tags: [elasticsearch, prerequisites, elasticsearch_prerequisites]
+- include: P5000_workers.yml
+  tags: [elasticsearch, workers, elasticsearch_workers]
+- include: P6000_plugins.yml
+  tags: [elasticsearch, plugins, elasticsearch_plugins]
+- include: P7000_reverse_proxy.yml
+  tags: [elasticsearch, reverse_proxy, elasticsearch_reverse_proxy]
+- include: P8000_entry_point.yml
+  tags: [elasticsearch, entry_point, elasticsearch_entry_point]
+- include: G9000_fixperms.yml
+  tags: [elasticsearch, end_fixperms, elasticsearch_end_fixperms]

@@ -5,14 +5,17 @@
         "ansible_args": "-vvvvv -c local -i localhost,",
         "DO_UP": "",
         "DO_CONTAINER_STRIP": "1",
-        "ansible_folder": "ansible",
+        "salt_folder": ".salt",
+        "docker_folder": ".docker",
+        "ansible_folder": ".ansible",
         "ansible_play": "site.yml",
-        "tag": "corpusops/elasticsearch:__VERSION__",
+        "tag": "corpusops/elasticsearch:5.4.0",
         "img_entrypoint": "/entry_point",
         "entrypoint": "/app_entry_point",
         "author": "corpusops",
         "tag_image": "corpusops/elasticsearch",
-        "tag_version": "__VERSION__",
+        "tag_name": "elasticsearch",
+        "tag_version": "5.4.0",
         "provisiondir_rsync_opts": "-azv --delete",
         "docker_name": "packer-{{uuid}}",
         "volumes": "[\"/setup\", \"/srv/projects/elasticsearch/data\"]",
@@ -29,6 +32,7 @@
             "--security-opt", "seccomp=unconfined",
             "-e", "COPS_IMGTAG={{user `tag`}}",
             "-e", "COPS_IMG={{user `tag_image`}}",
+            "-e", "COPS_IMGNAME={{user `tag_name`}}",
             "-e", "COPS_IMGVER={{user `tag_version`}}",
             "-d", "-i", "-t",
             "--name", "{{user `docker_name`}}",
@@ -66,7 +70,7 @@
             "DO_UP={{user `DO_UP`}}",
             "DO_CONTAINER_STRIP={{user `DO_CONTAINER_STRIP`}}"
         ],
-        "script": "docker/provision.sh"
+        "script": "{{user `docker_folder`}}/provision.sh"
     }],
     "post-processors": [{
         "type": "docker-tag",

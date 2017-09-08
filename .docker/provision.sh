@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -ex
-rsync $RSYNC_OPTS "$_P.in/" "$_P/"
+rsync $RSYNC_OPTS "$_P.in/" "$_P/" --exclude=local --delete-excluded
 export ANSIBLE_FORCE_COLOR=1 PYTHONUNBUFFERED=1
 log() { echo "${@}" >&2; }
 vv() { log "$@"; "$@"; }
