@@ -17,7 +17,7 @@ cops_elasticsearch_query_host: "{% if '_local_' in cops_elasticsearch_bind_host
   %}{{ansible_fqdn}}{% else
   %}{{cops_elasticsearch_bind_host}}{%endif%}"
 cops_elasticsearch_deb_packages: [apache2-utils, python-passlib]
-cops_elasticsearch_rh_paackages: [httpd-tools, python-passlib]
+cops_elasticsearch_rh_packages: [httpd-tools, python-passlib]
 cops_elasticsearch_name: 'elasticsearch'
 cops_elasticsearch_user: "{{cops_elasticsearch_name}}-user"
 cops_elasticsearch_group: "{{cops_elasticsearch_name}}-group"
