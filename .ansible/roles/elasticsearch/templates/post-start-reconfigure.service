@@ -1,0 +1,11 @@
+# {{ansible_managed}}}
+[Unit]
+Description=cops {{ cops_elasticsearch_name }} reconfigure on restart
+After=network.target{% for s in cops_elasticsearch_services %} {{s}}.service{%endfor%}
+
+[Service]
+Type=forking
+ExecStart={{cops_elasticsearch_reconfigure}} post
+PassEnvironment={{cops_elasticsearch_reconfigure_passenv}}
+TimeoutSec=0
+RemainAfterExit=yes

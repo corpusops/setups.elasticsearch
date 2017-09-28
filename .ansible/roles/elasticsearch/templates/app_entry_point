@@ -1,28 +1,22 @@
 #!/usr/bin/env bash
 # {{ansible_managed}}
 set -ex
+export USE_INIT="${USE_INIT-}"
+export ENTRY_POINT="${IMAGE_ENTRY_POINT-{{cops_elasticsearch_ep_main_ep}}}"
+export RESTARTED_SERVICES="${RESTARTED_SERVICES-{{cops_elasticsearch_services|join(' ')}}}"
 
-ANSIBLE_VARARGS=""
-if [ -e /setup/reconfigure.yml ];then
-    ANSIBLE_VARARGS="-e @/setup/reconfigure.yml"
-fi
 # Reconfigure (extra-light reprovision) app from user volumes/env
-if [[ -z ${NO_CONFIG-} ]];then
-    cd /provision_dir
-    /srv/corpusops/corpusops.bootstrap/bin/cops_apply_role \
-        $ANSIBLE_VARARGS \
-        -vvvv {{ep_playbook}} \
-        --skip-tags={{ep_skip_tags}}
-fi
-
+# The script will be certainly reexecuted a second time from
+# systemd (with different SKIPTAGS
+"{{cops_elasticsearch_reconfigure}}"
 # Launch app (via systemd)
 cd /
 if [[ -n ${USE_INIT-} ]];then
-    exec {{ep_main_ep}}
+    exec $ENTRY_POINT
 else
     if [[ -z ${NO_RESTART-} ]];then
-{% for i in ep_services %}
-        systemctl restart {{i}}
-{% endfor %}
+        for i in $RESTARTED_SERVICES;do
+            systemctl restart $i
+        done
     fi
 fi

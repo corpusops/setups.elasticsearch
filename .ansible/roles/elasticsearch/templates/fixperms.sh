@@ -11,9 +11,13 @@ projects_dir="{{cfg.projects_dir}}"
 project_dir="{{cfg.project_dir}}"
 project_root="{{cfg.project_root}}"
 data_root="{{cfg.data_root}}"
+SUPEREDITORS="${SUPEREDITORS:-{{cfg.supereditors|join(' ')}}}"
 TOP_DIRS=""
 TOP_SCRIPTS="
 $THIS
+"
+SUPEREDITORS_PATHS="
+{{cfg.supereditors_paths|join('\n')}}
 "
 log() { echo "${@}" >&2; }
 vv() { log "${@}"; "$@"; }
@@ -43,6 +47,37 @@ for i in nginx www-data;do
         vv gpasswd -a $i $group 2>&1
     fi
 done
+
+if [[ -n $SUPEREDITORS ]];then
+    echo "Supereditors mode, may this not be used in production" >&2
+    echo "It's unsecure !!!" >&2
+    while read i;do
+        if [ -e "${i}" ] && [ ! -h "${i}" ];then
+            echo "Applying USER $user:$group ACL to $i" >&2
+            if [ -d "${i}" ];then
+                setfacl -R \
+                     -m "d:group:${group}:rwx,group:${group}:rwx" \
+                     -m "d:user:${user}:rwx,user:${user}:rwx" \
+                     "${i}"
+            else
+                setfacl \
+                    -m "d:group:${group}:rwx,group:${group}:rwx" \
+                    -m "d:user:${user}:rwx,user:${user}:rwx" \
+                    "${i}"
+            fi
+            for editor in ${SUPEREDITORS};do
+                echo "Applying EDITOR $editor ACL to $i" >&2
+                if [ -d "${i}" ];then
+                    setfacl -R -m\
+                         "d:user:${editor}:rwx,user:${editor}:rwx" \
+                         "${i}"
+                else
+                    setfacl -m "user:${editor}:rwx" "${i}"
+                fi
+            done
+        fi
+    done <<< "${SUPEREDITORS_PATHS}"
+fi
 
 while read i;do
     echo "$i"

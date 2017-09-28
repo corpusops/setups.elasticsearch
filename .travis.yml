@@ -4,6 +4,8 @@ dist: trusty
 env:
   global:
     - |
+      __NAME__="elasticsearch" \
+      RELEASE_DEBUG="" \
       COPS_URL="https://github.com/corpusops/corpusops.bootstrap" \
       COPS_ROOT="$TRAVIS_BUILD_DIR/local/corpusops.bootstrap" \
       funcs="$COPS_ROOT/bin/cops_shell_common" \
@@ -13,8 +15,6 @@ env:
       sync_code="$install -C --synchronize-code --skip-sync-core" \
       release="$COPS_ROOT/hacking/docker_release" \
       silent_rm="$silent rm -rf"
-    - RELEASE_DEBUG=""
-    -__NAME__="elasticsearch"
   matrix:
     - __VERSION__="5.4.0" \
       IMAGE="packer__${IMAGE_VERSION.json" \

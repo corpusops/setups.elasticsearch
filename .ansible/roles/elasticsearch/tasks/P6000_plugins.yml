@@ -5,13 +5,18 @@
       cd {{cops_elasticsearch_vars.root}}
       . bin/es.env
       {% for i, d  in item.items() %}
+      for i in bin/elasticsearch-plugin bin/plugin;do
+        doplug=$i
+        if [ -e $i ];then break;fi
+      done
       if test ! -e "plugins/{{d}}";then
         {% set sw='--batch'%}
         {% if cops_elasticsearch_vars.version[0] > '1' %}{% set sw='--batch'%}{%endif%}
-        bin/plugin install {{sw}} "{{i}}" && \
-          echo "cops: Installed plugin {{i}}" >&2
+        $doplug install {{sw}} "{{i}}" && \
+        echo "cops: Installed plugin {{i}}" >&2
       else
         echo "cops: Already installed plugin {{i}}" >&2
+        exit 0
       fi
       {% endfor %}
   with_items: "{{cops_elasticsearch_vars.plugins.get(

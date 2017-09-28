@@ -1,24 +1,18 @@
 ---
-- name: configs
-  template:
-    dest: "{{item.dest}}"
-    src: "{{item.src|default('../templates{0}'.format(item.dest))}}"
-    force: "{{item.force|default(True)}}"
-    mode: "{{item.mode|default(omit)}}"
-    owner: "{{item.owner|default(omit)}}"
-    group: "{{item.group|default(omit)}}"
-  with_list: "{{cops_elasticsearch_vars.configs}}"
-  tags: [elasticsearch, workers_configs,
-         elasticsearch_workers_configs]
-  notify: "{{cops_elasticsearch_vars.rhandlers}}"
 - service:
     state: "{{cops_elasticsearch_vars.activated | ternary('started', 'stopped')}}"
     enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
     name: "{{item}}"
   with_items: "{{cops_elasticsearch_vars.services}}"
   when: "corpusops_vars.has_services_manager"
-  tags: [elasticsearch, workers_configs,
-         elasticsearch_workers_configs]
+  tags: [elasticsearch, workers_services, elasticsearch_workers_services]
+- systemd:
+    enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
+    daemon_reload: yes
+    name: "{{item}}"
+  with_items: "{{cops_elasticsearch_vars.reconfigure_services}}"
+  when: "corpusops_vars.has_services_manager"
+  tags: [elasticsearch, workers_services, elasticsearch_workers_reconfigure_services]
 - uri:
     url: "http://{{cops_elasticsearch_vars.query_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
     return_content: true

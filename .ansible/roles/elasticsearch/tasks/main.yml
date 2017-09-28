@@ -9,6 +9,8 @@
   tags: [elasticsearch, first_fixperms, elasticsearch_first_fixperms]
 - include_tasks: P4000_prerequisites.yml
   tags: [elasticsearch, prerequisites, elasticsearch_prerequisites]
+- include_tasks: P4500_setup.yml
+  tags: [elasticsearch, setup, elasticsearch_setup]
 - include_tasks: P5000_workers.yml
   tags: [elasticsearch, workers, elasticsearch_workers]
 - include_tasks: P6000_plugins.yml

@@ -3,7 +3,7 @@
   package:
     cache_valid_time: '{{60*60}}'
     update_cache: yes
-    package: '{{item}}'
+    name: '{{item}}'
     state: present
   when: "(ansible_os_family.lower() in ['debian'] and
           cops_elasticsearch_vars.deb_packages is not none and
@@ -16,7 +16,7 @@
   package:
     update_cache: yes
     enablerepo: epel,epel-testing
-    package: '{{item}}'
+    name: '{{item}}'
     state: present
   when: "(ansible_os_family.lower() in ['redhat'] and
           cops_elasticsearch_vars.rh_packages is not none and

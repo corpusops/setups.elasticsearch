@@ -1,8 +1,8 @@
 ---
 corpusops_core_projects_path: /srv/projects
 # app version
-#cops_elasticsearch_version: '5.4.2'
-cops_elasticsearch_version: '2.3.3'
+cops_elasticsearch_version: "{{
+  ansible_env.get('COPS_IMGVER', '5.4.0')}}"
 # app domain & users
 cops_elasticsearch_domain: "{{ansible_fqdn}}"
 cops_elasticsearch_users:
@@ -12,6 +12,17 @@ cops_elasticsearch_users:
                 (cops_elasticsearch_cfg+'/pwd_admin '
                  'length=15 chars=ascii_letters,digits')) }}"
 # app settings
+# users than have full right to edit file in the container
+# When this is enabled, the project user/group is also granted full perms
+# (attention, uids!)
+cops_elasticsearch__supereditors_paths: [
+  "{{ cops_elasticsearch_project_root }}",
+  "{{ cops_elasticsearch_data_root }}",
+  /var, /home, /opt, /srv]
+cops_elasticsearch__supereditors: >-
+  {{ ansible_env.get('SUPEREDITORS', '') | copsf_splitstrip | to_json }}
+cops_elasticsearch_supereditors: "{{cops_elasticsearch__supereditors}}"
+cops_elasticsearch_supereditors_paths: "{{cops_elasticsearch__supereditors_paths}}"
 cops_elasticsearch_query_host: "{% if '_local_' in cops_elasticsearch_bind_host
   %}127.0.0.1{% elif '_site_' in cops_elasticsearch_bind_host
   %}{{ansible_fqdn}}{% else
@@ -47,7 +58,7 @@ cops_elasticsearch_plugins:
     - mobz/elasticsearch-head: head
     - karmi/elasticsearch-paramedic: paramedic
   default:
-    - mobz/elasticsearch-head: head
+    #- mobz/elasticsearch-head: head
     - mapper-attachments: mapper-attachments
 cops_elasticsearch_filetest:
   - bin/elasticsearch
@@ -117,18 +128,42 @@ cops_elasticsearch_jvmoptions: "../templates/jvm.options"
 ## entry point
 cops_elasticsearch_ep_template: "../templates/app_entry_point"
 # entrypoint settings
-cops_elasticsearch_ep_playbook: "ansible/site.yml"
+cops_elasticsearch_ep_playbook: "site.yml"
 cops_elasticsearch_ep_skip_tags: "{{(
-  'reverseproxy_install,jdk_install,'
-  'elasticsearch_users,elasticsearch_first_fixperms,elasticsearch_prerequisites,elasticsearch_plugins,elasticsearch_entry_point'
+  'elasticsearch_users,'
+  'elasticsearch_first_fixperms,'
+  'elasticsearch_prerequisites,'
+  'elasticsearch_workers,'
+  'elasticsearch_plugins,'
+  'reverseproxy_install,'
+  'jdk_install,'
+  'elasticsearch_entry_point'
   )}}"
+cops_elasticsearch_ep_post_start_skip_tags: "{{(
+  'reverseproxy_install,'
+  'jdk_install,'
+  'elasticsearch_users,'
+  'elasticsearch_layout,'
+  'elasticsearch_first_fixperms,'
+  'elasticsearch_prerequisites,'
+  'elasticsearch_setup,'
+  'elasticsearch_workers,'
+  'elasticsearch_plugins,'
+  'elasticsearch_reverse_proxy,'
+  'elasticsearch_entry_point'
+  'elasticsearch_end_fixperms,'
+  )}}"
+cops_elasticsearch_service_cmd: "{{cops_elasticsearch_root}}/bin/run.sh"
 cops_elasticsearch_ep_main_ep: "/entry_point"
 # service
-cops_elasticsearch_service_cmd: "{{cops_elasticsearch_root}}/bin/run.sh"
 cops_elasticsearch_service: "cops_{{cops_elasticsearch_name}}"
-cops_elasticsearch_services: ["{{cops_elasticsearch_service}}"]
+cops_elasticsearch_services:
+- "{{cops_elasticsearch_service}}"
+cops_elasticsearch_reconfigure_services:
+- "post-start-{{cops_elasticsearch_service}}"
 cops_elasticsearch_rhandlers: ["restart_{{cops_elasticsearch_service}}"]
 cops_elasticsearch_activated: true
+cops_elasticsearch_stickymode: "2"
 cops_elasticsearch_limits_nofile: 65536
 cops_elasticsearch_limits_nproc: 4096
 # Reverse proxy
@@ -146,7 +181,6 @@ cops_elasticsearch_nginx_ssl_cert: ""
 cops_elasticsearch_nginx_ssl_key: ""
 cops_elasticsearch_nginx_loglevel: crit
 cops_elasticsearch_nginx_upstream_name: "{{cops_elasticsearch_name}}"
-cops_elasticsearch_stickymode: "2"
 #
 cops_elasticsearch_files:
   - {path: "{{cops_elasticsearch_projects_dir}}",
@@ -193,7 +227,20 @@ cops_elasticsearch_files:
   - {path: "{{cops_elasticsearch_root}}/lib",     src: "{{cops_elasticsearch_real_root}}/lib", state: link, force: true}
   - {path: "{{cops_elasticsearch_root}}/modules", src: "{{cops_elasticsearch_real_root}}/modules", state: link, force: true}
   - {path: "{{cops_elasticsearch_root}}/plugins", src: "{{cops_elasticsearch_pluginsd}}", state: link, force: true}
+cops_elasticsearch_reconfigure: "{{cops_elasticsearch_project_dir}}/reconfigure.sh"
+cops_elasticsearch_reconfigure_passenv: "ANSIBLE_PLAY ANSIBLE_FOLDER"
 cops_elasticsearch_configs:
+  # script to reconfigure image before and after systemd is launched
+  - {src: "../templates/reconfigure.sh",
+     dest: "{{cops_elasticsearch_reconfigure}}",
+     mode: "0755",
+     owner: "root",
+     group: "root"}
+  - {src: "../templates/post-start-reconfigure.service",
+     dest: "/etc/systemd/system/post-start-{{cops_elasticsearch_service}}.service",
+     mode: "0644",
+     owner: "root",
+     group: "root"}
   - {src: "../templates/app.service",
      dest: "/etc/systemd/system/{{cops_elasticsearch_service}}.service",
      mode: "0644",
