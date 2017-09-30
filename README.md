@@ -8,26 +8,56 @@
 This setups a nginx reverse proxy on http/https that forward requests
 to an underlying elasticsearch worker.
 
-### Run this image through docker
 
-- Create the data dir & the ansible params file
-  that will reconfigure elasticsearch & nginx before starting up
+### ajust some system conf
 
-    - See [defaults](/ansible/roles/elasticsearch/defaults/main.yml)
-    - We use here those volume
-        - a simple volume ``setup`` to share a configuration file to reconfigure fles
-        - All other volumes may be [docker volumes](https://docs.docker.com/engine/admin/volumes/volumes/)
-          as they need at first to be prepopulated from the image content.
+Mostly for elasticsearch5+
+
+- System wide
 
     ```sh
-    mkdir -p local/data local/setup
+    sudo sysctl -w vm.max_map_count=262144
+    ```
+
+- Or by docker CLI setting if possible
+
+    ```
+    --sysctl vm.max_map_count=262144
+    ```
+
+### Volumes
+- We use two main volumes!
+    - a volume ``setup`` to share a configuration file to reconfigure fles
+    - a volume ``data`` to store user data
+
+#### Initialise setup volume
+- To reconfigure any setting upon container (re)start, create/edit ``/setup/reconfigure.yml``
+    - See [defaults](/ansible/roles/elasticsearch/defaults/main.yml)
+
+- exemple:
+
+    ```sh
+    mkdir -p local/setup
     cat >local/setup/reconfigure.yml << EOF
     ---
     cops_es_env:
       ES_HTTP_PORT: 9200
     EOF
     ```
-- On the first run, the ``data`` directory **MUST BE EMPTY**
+
+#### Initialise user data volumes
+- You need to preseed some volumes from your image before running it
+    - data
+
+        ```sh
+        mkdir -p local/data
+        docker run --rm  -v $PWD/local/data:/ldata --entrypoint rsync \
+            corpusops/postgresql:5.4.0 \
+            "/srv/projects/postgresql/data/" "/ldata/" \
+            -av --delete --exclude "pwd_*" --delete-excluded
+        ```
+
+### Run this image through docker
 - To pull & run this image
   Note that The folllowing command implicitly create 2 volumes against local directories and the goal
   is to prepopulate the directories from the image content on the first run.<br/>
@@ -36,12 +66,11 @@ to an underlying elasticsearch worker.
     ```sh
     # docker pull corpusops/elasticsearch:<TAG>
     docker pull corpusops/elasticsearch:5.4.0
-    N="my-elasticsearch-container"
     docker run \
-      --name=${N} \
+      --name=my-elasticsearch-container \
       -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
-      -v $(pwd)/local/setup:/setup:ro \
-      --mount volume-driver=local,volume-opt=type=none,volume-opt=device=$(pwd)/local/data,volume-opt=o=bind,source=${N}-data,target=/srv/projects/postgresql/data \
+      -v "$(pwd)/local/setup:/setup:ro" \
+      -v "$(pwd)/local/data:/srv/projects/postgresql/data" \
       --security-opt seccomp=unconfined \
       -P -d -i -t corpusops/elasticsearch:5.4.0
     ```
@@ -70,7 +99,7 @@ to an underlying elasticsearch worker.
     - ``cops_postgresql_supereditors_paths`` Tell which paths will be "opened" to the outside user(s) if default does not suit your need
     - ``cops_postgresql_supereditors`` Tell which user(s), (attention **UIDS**).<br/>
       The aforementioned command to launch container includes the ``SUPEREDITORS`` env var configured with the loggued in user
-- Those settings can be overriden via ``setup/reconfigure.yml``
+- Those settings can be overriden via ``/setup/reconfigure.yml``
 - File rights are enforced upon container (re-)start
 - If file rights are messed up too much, you can try this to enforce them
 
