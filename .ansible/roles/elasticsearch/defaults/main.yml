@@ -95,6 +95,7 @@ cops_elasticsearch_env:
   ES_ACTION_DISABLE_DELETE_ALL_INDICES: "true"
   ES_DISCOVERY_ZEN_PING_MULTICAST_ENABLED: "false"
   ES_HTTP_JSONP: "true"
+  ES_CORS_ENABLED: "true"
   ES_NODE_NAME: "{{ansible_fqdn}}"
   ES_NODE_MASTER: "true"
   ES_NODE_DATA: "true"
@@ -102,7 +103,7 @@ cops_elasticsearch_env:
   ES_LOG_KEEP_LOG_DAYS: 15
   # comma sepated list ( foo="host1, host2" )
   ES_DISCOVERY_ZEN_PING_UNICAST_HOSTS: ""
-  ES_LOG_STATUS: error
+  ES_LOG_STATUS: ERROR
   ES_LOG_LEVEL: INFO
   ES_LOG_LEVEL_ACTION: DEBUG
   ES_LOG_INDEX_SEARCH_SLOWLOG: "false"

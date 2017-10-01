@@ -8,6 +8,15 @@
     owner: "{{item.owner|default(omit)}}"
     group: "{{item.group|default(omit)}}"
   with_list: "{{cops_elasticsearch_vars.configs}}"
-  tags: [elasticsearch, workers_configs,
-         elasticsearch_workers_configs]
+  tags: [elasticsearch, configs,
+         elasticsearch_configs]
   notify: "{{cops_elasticsearch_vars.rhandlers}}"
+- name: files
+  file:
+    path: "{{item}}"
+    state: "absent"
+  with_items:
+    - "{{cops_elasticsearch_cfg}}/logging.yml"
+  changed_when: False
+  when: "cops_elasticsearch_version[0]|copsf_looseversion >= '5'|copsf_looseversion"
+  tags: [elasticsearch, rm_configs, elasticsearch_layout_rm_configs]

@@ -1,4 +1,6 @@
 # {{ansible_managed}}
+# {% set above_5 = "cops_elasticsearch_version[0]|copsf_looseversion >= '5'|copsf_looseversion" %}
+# {% set commented_if_above_5 = above_5 and '#' or '' %}
 ##################### Elasticsearch Configuration Example #####################
 
 # This file contains an overview of various configuration settings,
@@ -104,11 +106,11 @@ node.data: ${ES_NODE_DATA}
 
 # Set the number of shards (splits) of an index (5 by default):
 #
-index.number_of_shards: ${ES_NUMBER_OF_SHARDS}
+{{ commented_if_above_5 }}index.number_of_shards: ${ES_NUMBER_OF_SHARDS}
 
 # Set the number of replicas (additional copies) of an index (1 by default):
 #
-index.number_of_replicas: ${ES_NUMBER_OF_REPLICAS}
+{{ commented_if_above_5 }}index.number_of_replicas: ${ES_NUMBER_OF_REPLICAS}
 
 # Note, that for development on a local machine, with small indices, it usually
 # makes sense to "disable" the distributed features:
@@ -155,7 +157,7 @@ path.data: ${ES_PATH_DATA}
 
 # Path to temporary files:
 #
-path.work: ${ES_PATH_WORK}
+{{commented_if_above_5}}path.work: ${ES_PATH_WORK}
 
 # Path to log files:
 #
@@ -163,7 +165,7 @@ path.logs: ${ES_PATH_LOGS}
 
 # Path to where plugins are installed:
 #
-path.plugins: ${ES_PATH_PLUGINS}
+{{ commented_if_above_5 }}path.plugins: ${ES_PATH_PLUGINS}
 
 
 #################################### Plugin ###################################
@@ -180,7 +182,7 @@ path.plugins: ${ES_PATH_PLUGINS}
 #
 # Set this property to true to lock the memory:
 #
-bootstrap.mlockall: ${ES_MLOCKALL}
+{{commented_if_above_5}}bootstrap.mlockall: ${ES_MLOCKALL}
 
 # Make sure that the ES_MIN_MEM and ES_MAX_MEM environment variables are set
 # to the same value, and that the machine has enough memory to allocate
@@ -212,7 +214,7 @@ network.publish_host: ${ES_NETWORK_PUBLISH_HOST}
 
 # Set a custom port for the node to node communication (9300 by default):
 #
-transport.publish.port: ${ES_HTTP_PORT}
+transport.publish_port: ${ES_HTTP_PORT}
 transport.tcp.port: ${ES_TCP_PORT}
 
 # Enable compression for all communication between nodes (disabled by default):
@@ -318,12 +320,12 @@ discovery.zen.minimum_master_nodes: ${ES_DISCOVERY_ZEN_MINIMUM_MASTER_NODES}
 #
 # 1. Disable multicast discovery (enabled by default):
 #
-discovery.zen.ping.multicast.enabled: ${ES_DISCOVERY_ZEN_PING_MULTICAST_ENABLED}
+{{commented_if_above_5}}discovery.zen.ping.multicast.enabled: ${ES_DISCOVERY_ZEN_PING_MULTICAST_ENABLED}
 #
 # 2. Configure an initial list of master nodes in the cluster
 #    to perform discovery when new nodes (master or data) are started:
 #
-discovery.zen.ping.unicast.hosts: ${ES_DISCOVERY_ZEN_PING_UNICAST_HOSTS}
+{{commented_if_above_5}}discovery.zen.ping.unicast.hosts: ${ES_DISCOVERY_ZEN_PING_UNICAST_HOSTS}
 
 # EC2 discovery allows to use AWS EC2 API in order to perform discovery.
 #
@@ -382,9 +384,13 @@ discovery.zen.ping.unicast.hosts: ${ES_DISCOVERY_ZEN_PING_UNICAST_HOSTS}
 # http server. With this enabled, it may pose a security risk, so disabling
 # it unless you need it is recommended (it is disabled by default).
 #
+{% if above_5 %}
+http.cors.enabled: ${ES_CORS_ENABLED}
+{% else %}
 http.jsonp.enable: ${ES_HTTP_JSONP}
+{% endif %}
 
-# secutity
-action.disable_delete_all_indices: ${ES_ACTION_DISABLE_DELETE_ALL_INDICES}
+# security
+{{ commented_if_above_5}}action.disable_delete_all_indices: ${ES_ACTION_DISABLE_DELETE_ALL_INDICES}
 
 path.repo: ["${ES_PATH_WORK}/snapshots"]
