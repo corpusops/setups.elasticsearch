@@ -52,8 +52,8 @@ Mostly for elasticsearch5+
         ```sh
         mkdir -p local/data
         docker run --rm  -v $PWD/local/data:/ldata --entrypoint rsync \
-            corpusops/postgresql:5.4.0 \
-            "/srv/projects/postgresql/data/" "/ldata/" \
+            corpusops/elasticsearch:5.4.0 \
+            "/srv/projects/elasticsearch/data/" "/ldata/" \
             -av --delete --exclude "pwd_*" --delete-excluded
         ```
 
@@ -70,7 +70,7 @@ Mostly for elasticsearch5+
       --name=my-elasticsearch-container \
       -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
       -v "$(pwd)/local/setup:/setup:ro" \
-      -v "$(pwd)/local/data:/srv/projects/postgresql/data" \
+      -v "$(pwd)/local/data:/srv/projects/elasticsearch/data" \
       --security-opt seccomp=unconfined \
       -P -d -i -t corpusops/elasticsearch:5.4.0
     ```
@@ -96,8 +96,8 @@ Mostly for elasticsearch5+
   activly developping  your app to edit the files of the container,<br/>
   thanks to POSIX ACLS.
 - You need two things to configure your app (normally good by dedfault):
-    - ``cops_postgresql_supereditors_paths`` Tell which paths will be "opened" to the outside user(s) if default does not suit your need
-    - ``cops_postgresql_supereditors`` Tell which user(s), (attention **UIDS**).<br/>
+    - ``cops_elasticsearch_supereditors_paths`` Tell which paths will be "opened" to the outside user(s) if default does not suit your need
+    - ``cops_elasticsearch_supereditors`` Tell which user(s), (attention **UIDS**).<br/>
       The aforementioned command to launch container includes the ``SUPEREDITORS`` env var configured with the loggued in user
 - Those settings can be overriden via ``/setup/reconfigure.yml``
 - File rights are enforced upon container (re-)start
