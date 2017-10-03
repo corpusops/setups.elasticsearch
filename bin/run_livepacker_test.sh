@@ -7,7 +7,7 @@ OW=$(pwd)
 W=$(cd "$(dirname $0)/.." && pwd)
 COPS_ROOT="$W/local/corpusops.bootstrap"
 if [[ -z ${SKIP_COPS-} ]] && [ ! -e "$COPS_ROOT" ];then
-    git clone https://github.com/corpusops.bootstrap "$COPS_ROOT"
+    git clone https://github.com/corpusops/corpusops.bootstrap "$COPS_ROOT"
 fi
 #DOCKER_EXTRA_ARGS="--sysctl vm.max_map_count=262144"
 #export DOCKER_EXTRA_ARGS
