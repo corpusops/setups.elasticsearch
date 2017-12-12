@@ -1,0 +1,7 @@
+---
+cops_elasticsearch_ep_folder: "{{ansible_env['ANSIBLE_FOLDER']}}"
+cops_elasticsearch_ep_playbook: "{{ansible_env['ANSIBLE_PLAY']}}"
+cops_elasticsearch_reconfigure_services: ["post-start-{service}"]
+cops_elasticsearch_lifecycle_app_push_code: false
+cops_elasticsearch_reconfigure_service_stderr: "journal+console"
+cops_elasticsearch_reconfigure_service_stdout: "journal+console"

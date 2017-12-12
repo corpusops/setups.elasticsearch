@@ -1,0 +1,4 @@
+---
+cops_app_name: elasticsearch
+cops_installer_mode: lazy
+# vim:set ft=sls:

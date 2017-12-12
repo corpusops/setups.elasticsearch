@@ -1,0 +1,23 @@
+---
+- name: configs
+  template:
+    dest: "{{item.dest}}"
+    src: "{{item.src|default('../templates{0}'.format(item.dest))}}"
+    force: "{{item.force|default(True)}}"
+    mode: "{{item.mode|default(omit)}}"
+    owner: "{{item.owner|default(omit)}}"
+    group: "{{item.group|default(omit)}}"
+  with_list: "{{cops_elasticsearch_vars.configs}}"
+  notify: "{{cops_elasticsearch_vars.rhandlers}}"
+  tags: [cops_elasticsearch_s_setup_configs]
+  when: "cops_elasticsearch_s_setup_configs"
+- name: files
+  file:
+    path: "{{item}}"
+    state: "absent"
+  with_items:
+    - "{{cops_elasticsearch_cfg}}/logging.yml"
+  changed_when: False
+  tags: [cops_elasticsearch_s_setup_files]
+  when: "(cops_elasticsearch_s_setup_files and
+          (cops_elasticsearch_version[0]|copsf_looseversion >= '5'|copsf_looseversion))"

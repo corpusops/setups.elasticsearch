@@ -1,0 +1,43 @@
+---
+# compute some defaults
+- set_fact:
+    cacheable: false
+    # Set absolute path to app role (for templates path)
+    cops_elasticsearch_vrole_path: "{{role_path.replace('_vars', '')}}"
+
+# Set the cops_elasticsearch_vars var from defaults/main.yml
+- name: "elasticsearch registry init"
+  include_role: {name: corpusops.roles/vars_registry}
+  vars:
+    cops_vars_registry_target: cops_elasticsearch
+  tags: [elasticsearch, vars, elasticsearch_vars]
+  no_log: "{{not (cops_vars_debug|default(false))}}"
+
+# Generate passwords on remote box if not found in registry
+- name: "elasticsearch secrets -- {{elasticsearchsecret}}}"
+  include_tasks: _set_secret_variable.yml
+  loop_control: {loop_var: elasticsearchsecret}
+  with_items: "{{cops_elasticsearch_vars.secret_variables}}"
+  tags: [elasticsearch, vars, elasticsearch_vars]
+  no_log: "{{not (cops_vars_debug|default(false))}}"
+
+- include_jinja_vars:
+    name: __GLOBAL__
+    content: |
+      ---
+      {% set p = 'cops_elasticsearch_vars' %}
+      {% set _vars = {p: vars[p]} %}
+      {% set env = _vars[p].env %}
+      {% set _ = env.update(_vars[p].env_overrides) %}
+      {# filter user env #}
+      {% for i, val in vars.get('ansible_env', {}).items() %}
+      {%  if not i.startswith(
+              ('OLDPWD', 'CWD', 'PWD',
+               'TERM', 'USER', 'HOME', 'PS1',
+               'PATH', 'ANSIBLE', 'SSH', 'LS')) %}
+      {%    set _ = env.update({i: val})%}
+      {%  endif %}
+      {% endfor %}
+      {{ _vars | to_json }}
+  tags: [elasticsearch, vars, elasticsearch_vars]
+  no_log: "{{not (cops_vars_debug|default(false))}}"

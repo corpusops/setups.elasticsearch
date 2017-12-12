@@ -1,0 +1,14 @@
+---
+- group:
+    name: "{{cops_elasticsearch_vars.group}}"
+    state: present
+  tags: [cops_elasticsearch_s_users_group]
+  when: cops_elasticsearch_s_users_group
+- user:
+    group: "{{cops_elasticsearch_vars.group}}"
+    name: "{{cops_elasticsearch_vars.user}}"
+    state: present
+    append: true
+    generate_ssh_key: true
+  tags: [cops_elasticsearch_s_users_user]
+  when: cops_elasticsearch_s_users_user

@@ -1,0 +1,4 @@
+---
+# compute app settings
+- include_role: {name: ./roles/elasticsearch}
+  become: "{{cops_elasticsearch_vars.become}}"

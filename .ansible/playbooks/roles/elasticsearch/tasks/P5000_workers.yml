@@ -1,0 +1,27 @@
+---
+- service:
+    state: "{{cops_elasticsearch_vars.activated | ternary('started', 'stopped')}}"
+    enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
+    name: "{{item}}"
+  with_items: "{{cops_elasticsearch_vars.services}}"
+  tags: [cops_elasticsearch_s_workers_service]
+  when: "(cops_elasticsearch_s_workers_service and corpusops_vars.has_services_manager)"
+- systemd:
+    enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
+    daemon_reload: yes
+    name: "{{item}}"
+  with_items: "{{cops_elasticsearch_vars.reconfigure_services}}"
+  tags: [cops_elasticsearch_s_workers_service]
+  when: "(cops_elasticsearch_s_workers_service and corpusops_vars.has_services_manager)"
+  tags: [elasticsearch, workers_services, elasticsearch_workers_reconfigure_services]
+- uri:
+    url: "http://{{cops_elasticsearch_vars.query_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
+    return_content: true
+  tags: [cops_elasticsearch_s_workers_service]
+  when: "(cops_elasticsearch_s_workers_service and
+          corpusops_vars.has_services_manager and
+          cops_elasticsearch_vars.activated)"
+  register: cops_elasticsearch_check
+  until: "'elasticsearch' in cops_elasticsearch_check.content"
+  retries: 10
+  delay: 1

@@ -1,0 +1,44 @@
+---
+- hosts: "{{elasticsearch_servers|default('all')}}"
+  roles:
+    - role: corpusops.roles/ansible_plugins
+  tasks:
+    - include_tasks: tasks/load_vars.yml
+      tags: [cops_elasticsearch_lifecycle_app]
+      when: "cops_elasticsearch_lifecycle_app|default(true)"
+    - when: "cops_elasticsearch_lifecycle_app"
+      tags: [cops_elasticsearch_lifecycle_app]
+      become: true
+      block:
+      - become: true
+        block:
+          # TODO test if elasticsearch is running
+          - shell: "false"
+            failed_when: false
+            changed_when: false
+            register: cops_setup_databases_test1
+            no_log: true
+          - set_fact: {cops_test_no_db: false, cacheable: false}
+        rescue:
+          - set_fact: {cops_test_no_db: true,  cacheable: false}
+      - set_fact:
+          cacheable: false
+          cops_elasticsearch_lifecycle_app_setup: >-
+            (((not vars.get('SKIP_INSTALL_ELASTICSEARCH', False)) and
+             ((cops_test_no_db))) or
+               cops_elasticsearch_lifecycle_app|default(false) or
+             (vars.get('FORCE_INSTALL_ELASTICSEARCH', False)))
+
+- hosts: "{{elasticsearch_servers|default('all')}}"
+  tasks:
+    - tags: [cops_elasticsearch_lifecycle_app_push_code,cops_elasticsearch_lifecycle_app]
+      when: "cops_elasticsearch_lifecycle_app_push_code|default(cops_elasticsearch_lifecycle_app)"
+      block:
+      - include_tasks: tasks/lc_push_code.yml
+
+- hosts: "{{elasticsearch_servers|default('all')}}"
+  tasks:
+    - tags: [cops_elasticsearch_lifecycle_app_setup,cops_elasticsearch_lifecycle_app]
+      when: "cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app)"
+      block:
+      - include_tasks: tasks/lc_app.yml
