@@ -4,4 +4,4 @@
     cops_configs_templates: "{{cops_elasticsearch_ep_configs}}"
     cops_configs_notify: "{{cops_elasticsearch_vars.rhandlers}}"
   tags: [cops_elasticsearch_s_entry_point]
-  when: "cops_elasticsearch_s_entry_point"
+  when: [cops_elasticsearch_s_entry_point]

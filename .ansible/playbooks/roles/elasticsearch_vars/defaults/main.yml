@@ -165,6 +165,7 @@ cops_elasticsearch_s_prerequisites_jdk: true
 cops_elasticsearch_s_prerequisites_pkgs: true
 cops_elasticsearch_s_workers: true
 cops_elasticsearch_s_workers_service: true
+cops_elasticsearch_s_workers_checks: true
 cops_elasticsearch_s_reverse_proxy: true
 cops_elasticsearch_s_reverse_proxy_install: true
 cops_elasticsearch_s_reverse_proxy_users: true

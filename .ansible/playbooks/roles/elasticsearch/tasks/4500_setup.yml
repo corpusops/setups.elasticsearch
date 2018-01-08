@@ -3,5 +3,3 @@
 - include_role: {name: corpusops.roles/configs, private: true}
   vars:
     cops_configs_templates: "{{cops_elasticsearch_vars.configs}}"
-    cops_configs_notify: "{{cops_elasticsearch_vars.rhandlers}}"
-  tags: [elasticsearch, configs, elasticsearch_configs]
