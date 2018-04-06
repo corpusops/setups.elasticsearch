@@ -1,6 +1,7 @@
 ---
 - when: ["cops_elasticsearch_s_workers_service and corpusops_vars.has_services_manager"]
   tags: ["cops_elasticsearch_s_workers_service"]
+  become: true
   block:
   # activate the main app service
   - service:
