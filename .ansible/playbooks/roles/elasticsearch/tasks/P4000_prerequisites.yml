@@ -45,8 +45,8 @@
     become_user: "{{cops_elasticsearch_vars.user}}"
     when: "(cops_elasticsearch_vars.sha1_verify and
             not cops_elasticsearch_sha1test.stat.exists)"
-  - set_fact:
-      app_sha1v: "{{lookup('file', cops_elasticsearch_sha1file)}}"
+  - shell: "cat {{cops_elasticsearch_sha1file}}"
+    register: app_sha1v
     when: ["(cops_elasticsearch_vars.sha1_verify)"]
 
 
@@ -61,7 +61,7 @@
       app_path: "{{cops_elasticsearch_vars.real_root}}"
       urls:
         archive: "{{cops_elasticsearch_url}}"
-        archive_crc: "{{app_sha1v}}"
+        archive_crc: "{{app_sha1v.stdout.strip()}}"
         verify_sha1: "{{cops_elasticsearch_vars.sha1_verify}}"
   tags: [cops_elasticsearch_s_prerequisites_es]
   when: [cops_elasticsearch_s_prerequisites_es]
