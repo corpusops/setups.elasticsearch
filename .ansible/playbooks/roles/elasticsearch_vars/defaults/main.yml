@@ -6,10 +6,7 @@ cops_elasticsearch_version: "{{
 # app domain & users
 cops_elasticsearch_users:
   admin:
-    password: "{{
-        lookup('password',
-                (cops_elasticsearch_cfg+'/pwd_admin '
-                 'length=15 chars=ascii_letters,digits')) }}"
+    password: "password4yZ8e4Ef8K824Sk"
 # users than have full right to edit file in the container
 # When this is enabled, the project user/group is also granted full perms
 # (attention, uids!)
