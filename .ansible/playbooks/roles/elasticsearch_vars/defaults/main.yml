@@ -1,12 +1,15 @@
 ---
 corpusops_core_projects_path: /srv/projects
 # app version
-cops_elasticsearch_version: "{{
-  ansible_env.get('COPS_IMGVER', '5.4.0')}}"
+cops_elasticsearch_version: |-
+  {%- if 'COPS_IMG' in ansible_env %}
+  {%- set v = ansible_env.COPS_IMG.split(':')[1].replace('-dev', '') %}
+  {%- else %}
+  {%- set v = '5.4.0' %}
+  {%- endif %}{{v}}
 # app domain & users
-cops_elasticsearch_users:
-  admin:
-    password: "password4yZ8e4Ef8K824Sk"
+cops_elasticsearch_http_users:
+- {user: admin,  password: "password4yZ8e4Ef8K824Sk"}
 # users than have full right to edit file in the container
 # When this is enabled, the project user/group is also granted full perms
 # (attention, uids!)
@@ -14,16 +17,16 @@ cops_elasticsearch_users:
 # When this is enabled, the project user/group is also granted full perms
 # (attention, uids!)
 cops_elasticsearch__supereditors_paths:
-  - "{project_root}"
-  - "{data_root}"
+  - "{{vars['cops_elasticsearch_project_root']}}"
+  - "{{vars['cops_elasticsearch_data_root']}}"
 # space separated string of uids to allow to write inside
 # projetct directories (used in development through posix ACLS setter)
 cops_elasticsearch__supereditors: >-
   {{ ansible_env.get(
       'SUPEREDITORS', cops_supereditors|default('')
      ) | copsf_splitstrip | to_json }}
-cops_elasticsearch_supereditors_paths: "{_supereditors_paths}"
-cops_elasticsearch_supereditors: "{_supereditors}"
+cops_elasticsearch_supereditors_paths: "{{vars['cops_elasticsearch__supereditors_paths']}}"
+cops_elasticsearch_supereditors: "{{vars['cops_elasticsearch__supereditors']}}"
 cops_elasticsearch_deb_packages: [apache2-utils, python-passlib]
 cops_elasticsearch_rh_packages: [httpd-tools, python-passlib]
 # extra conf to add to pgconf (directly added to a tuning conf file (string))
@@ -32,42 +35,43 @@ cops_elasticsearch_domain: "{{ansible_fqdn}}"
 cops_elasticsearch_query_host: "{% if '_local_' in cops_elasticsearch_bind_host
   %}127.0.0.1{% elif '_site_' in cops_elasticsearch_bind_host
   %}{{ansible_fqdn}}{% else
-  %}{bind_host}{%endif%}"
-cops_elasticsearch_cfg: "{data_root}/config"
+  %}{{vars['cops_elasticsearch_bind_host']}}{%endif%}"
+cops_elasticsearch_cfg: "{{vars['cops_elasticsearch_data_root']}}/config"
 cops_elasticsearch_name: 'elasticsearch'
-cops_elasticsearch_user: "{name}-user"
-cops_elasticsearch_group: "{name}-group"
-cops_elasticsearch_projects_dir: '{{corpusops_vars.projects_path}}'
-cops_elasticsearch_project_dir: '{projects_dir}/{name}'
-cops_elasticsearch_project_root: "{project_dir}/project"
-cops_elasticsearch_data_root: "{project_dir}/data"
-cops_elasticsearch_fixperms: "{project_dir}/fixperms.sh"
+cops_elasticsearch_user: "{{vars['cops_elasticsearch_name']}}-user"
+cops_elasticsearch_group: "{{vars['cops_elasticsearch_name']}}-group"
+cops_elasticsearch_projects_dir: "{{corpusops_vars.projects_path}}"
+cops_elasticsearch_project_sdir: "{{vars['cops_elasticsearch_name']}}"
+cops_elasticsearch_project_dir: "{{vars['cops_elasticsearch_projects_dir']}}/{{vars['cops_elasticsearch_project_sdir']}}"
+cops_elasticsearch_project_root: "{{vars['cops_elasticsearch_project_dir']}}/project"
+cops_elasticsearch_data_root: "{{vars['cops_elasticsearch_project_dir']}}/data"
+cops_elasticsearch_fixperms: "{{vars['cops_elasticsearch_project_dir']}}/fixperms.sh"
 cops_elasticsearch_fixperms_cron_periodicity: "0 */2 * * *"
-cops_elasticsearch_fixperms_cron: "/etc/cron.d/{name}-fixperms"
+cops_elasticsearch_fixperms_cron: "/etc/cron.d/{{vars['cops_elasticsearch_name']}}-fixperms"
 # overrides this dict with values of cops_elasticsearch_env !
 cops_elasticsearch_env_overrides: {}
 cops_elasticsearch_env:
   # EG: ES_JAVA_OPTS: "-Xms4000m -Xmx4000m"
   ES_HTTP_PORT: "9200"
   ES_TCP_PORT: "9300"
-  ES_JAVA_OPTS: "-Xms{mem} -Xmx{mem}"
-  ES_CONF_DIR: "{cfg}"
+  ES_JAVA_OPTS: "-Xms{{vars['cops_elasticsearch_mem']}} -Xmx{{vars['cops_elasticsearch_mem']}}"
+  ES_CONF_DIR: "{{vars['cops_elasticsearch_cfg']}}"
   ES_LAUNCHER: "elasticsearch"
-  ES_PID_DIR: "{run}"
+  ES_PID_DIR: "{{vars['cops_elasticsearch_run']}}"
   ES_USE_IPV4: "1"
-  ES_NETWORK_HOST: "{bind_host}"
-  ES_NETWORK_BIND_HOST: "{bind_host}"
-  ES_NETWORK_PUBLISH_HOST: "{bind_host}"
+  ES_NETWORK_HOST: "{{vars['cops_elasticsearch_bind_host']}}"
+  ES_NETWORK_BIND_HOST: "{{vars['cops_elasticsearch_bind_host']}}"
+  ES_NETWORK_PUBLISH_HOST: "{{vars['cops_elasticsearch_bind_host']}}"
   ES_HTTP_MAX_CONTENT_LENGTH: "1000mb"
   ES_DISCOVERY_ZEN_MINIMUM_MASTER_NODES: "1"
   ES_NUMBER_OF_SHARDS: "6"
   ES_NUMBER_OF_REPLICAS: "1"
-  ES_HOME: "{root}"
-  ES_PATH_CONF: "{cfg}"
-  ES_PATH_DATA: "{data}"
-  ES_PATH_WORK: "{tmp}"
-  ES_PATH_LOGS:  "{logs}"
-  ES_PATH_PLUGINS: "{pluginsd}"
+  ES_HOME: "{{vars['cops_elasticsearch_root']}}"
+  ES_PATH_CONF: "{{vars['cops_elasticsearch_cfg']}}"
+  ES_PATH_DATA: "{{vars['cops_elasticsearch_data']}}"
+  ES_PATH_WORK: "{{vars['cops_elasticsearch_tmp']}}"
+  ES_PATH_LOGS:  "{{vars['cops_elasticsearch_logs']}}"
+  ES_PATH_PLUGINS: "{{vars['cops_elasticsearch_pluginsd']}}"
   ES_MLOCKALL: "true"
   ES_ACTION_DISABLE_DELETE_ALL_INDICES: "true"
   ES_DISCOVERY_ZEN_PING_MULTICAST_ENABLED: "false"
@@ -87,7 +91,7 @@ cops_elasticsearch_env:
   ES_LOG_INDEX_INDEXING_SLOWLOG: "false"
 cops_elasticsearch_secret_variables: []
 cops_elasticsearch_cops_format_resolve_topdb: false
-cops_elasticsearch_cops_do_format_resolve: true
+cops_elasticsearch_cops_do_format_resolve: false
 cops_elasticsearch_cops_sub_namespaces:
   s: {}
   lifecycle: {}
@@ -97,97 +101,35 @@ cops_elasticsearch_elasticsearch_bind_host: '127.0.0.1'
 # templates
 ## entry point
 cops_elasticsearch_provision_dir: /provision_dir
-cops_elasticsearch_ep_ansible_args: >-
- -e "cops_cwd={provision_dir}"
- -e "cops_playbooks=${COPS_ROOT}/playbooks/corpusops"
- -e "cops_path=${COPS_ROOT}"
-cops_elasticsearch_ep_vaults:
-  - "{provision_dir}/.ansible/vaults/default.yml"
-  - "{provision_dir}/.ansible/vaults/app.yml"
-  - "{provision_dir}/.ansible/vaults/docker.yml"
-  - /setup/reconfigure.yml
 cops_elasticsearch_ep_template: "../templates/app_entry_point"
+cops_elasticsearch_ep_playbook: ".ansible/playbooks/site.yml"
+cops_elasticsearch_ep_main_ep: "/entry_point"
 # Docker entrypoint settings, tags for cli and vars for playbook reuse via
 # conditionals
-cops_elasticsearch_ep_folder: ".ansible"
-cops_elasticsearch_ep_playbook: "site.yml"
-cops_elasticsearch_ep_skip_tags: "{{(
-  'cops_elasticsearch_s_users,'
-  'cops_elasticsearch_s_first_fixperms,'
-  'cops_elasticsearch_s_prerequisites,'
-  'cops_elasticsearch_s_entry_point,'
-  'cops_elasticsearch_s_workers,'
-  'cops_elasticsearch_s_plugins,'
-  'cops_elasticsearch_s_reverse_proxy,'
-
-  )}}"
-cops_elasticsearch_ep_post_start_skip_tags: "{{(
-  'cops_elasticsearch_s_users,'
-  'cops_elasticsearch_s_layout,'
-  'cops_elasticsearch_s_first_fixperms,'
-  'cops_elasticsearch_s_prerequisites,'
-  'cops_elasticsearch_s_setup,'
-  'cops_elasticsearch_s_entry_point,'
-  'cops_elasticsearch_s_workers,'
-  'cops_elasticsearch_s_plugins,'
-  'cops_elasticsearch_s_reverse_proxy_install,'
-  'cops_elasticsearch_s_end_fixperms,'
-  )}}"
 # global orchestration steps (db, code sync, web & workers prereqs, elasticsearch config)
 cops_elasticsearch_become: true
-cops_elasticsearch_lifecycle_app: true
-cops_elasticsearch_lifecycle_app_push_code: true
-cops_elasticsearch_lifecycle_app_setup: true
-# elasticsearch & project deployment steps
-cops_elasticsearch_s_vars: true
-# deploy steps
-cops_elasticsearch_s_users: true
-cops_elasticsearch_s_users_group: true
-cops_elasticsearch_s_users_user: true
-cops_elasticsearch_s_entry_point: true
-cops_elasticsearch_s_first_fixperms: true
-cops_elasticsearch_s_fixperms_configs: true
-cops_elasticsearch_s_fixperms_run: true
-cops_elasticsearch_s_setup: true
-cops_elasticsearch_s_setup_configs: true
-cops_elasticsearch_s_setup_files: true
-cops_elasticsearch_s_layout: true
-cops_elasticsearch_s_layout_layout: true
-cops_elasticsearch_s_plugins: true
-cops_elasticsearch_s_plugins_install: true
-cops_elasticsearch_s_prerequisites: true
-cops_elasticsearch_s_prerequisites_archive_es: true
-cops_elasticsearch_s_prerequisites_es: true
-cops_elasticsearch_s_prerequisites_jdk: true
-cops_elasticsearch_s_prerequisites_pkgs: true
-cops_elasticsearch_s_workers: true
-cops_elasticsearch_s_workers_service: true
-cops_elasticsearch_s_workers_checks: true
-cops_elasticsearch_s_reverse_proxy: true
-cops_elasticsearch_s_reverse_proxy_install: true
-cops_elasticsearch_s_reverse_proxy_users: true
-cops_elasticsearch_s_reverse_proxy_vhost: true
-cops_elasticsearch_s_end_fixperms: true
-#
-cops_elasticsearch_ep_main_ep: "/entry_point"
 # service
-cops_elasticsearch_service: "cops_{name}"
-cops_elasticsearch_services: ["{service}"]
+cops_elasticsearch_service: "elasticsearch"
+cops_elasticsearch_services: ["{{vars['cops_elasticsearch_service']}}"]
 cops_elasticsearch_rhandlers: [restart_cops_elasticsearch]
 # use in docker (via a vault):
-cops_elasticsearch_reconfigure_services: []
-# cops_elasticsearch_reconfigure_services: ["post-start-{service}"]
+cops_elasticsearch_reconfigure_services: |-
+  {% set ret = [] %}
+  {% if ansible_virtualization_type in ['docker'] %}
+  {% set _ = ret.append("post-start-{{vars['cops_elasticsearch_service']}}") %}
+  {% endif %}
+  {{ ret | to_json }}
 cops_elasticsearch_activated: true
-#
-cops_elasticsearch_root: "{project_root}/es"
-cops_elasticsearch_real_root: "{project_root}/es-{version}"
-cops_elasticsearch_run: "{root}/run"
-cops_elasticsearch_bin: "{project_root}/bin"
-cops_elasticsearch_pluginsd: "{real_root}/plugins"
-cops_elasticsearch_modules: "{real_root}/modules"
-cops_elasticsearch_logs: "{data_root}/logs"
-cops_elasticsearch_data: "{data_root}/data"
-cops_elasticsearch_tmp: "{data_root}/tmp"
+# Layout, files & configs
+cops_elasticsearch_root: "{{vars['cops_elasticsearch_project_root']}}/es"
+cops_elasticsearch_real_root: "{{vars['cops_elasticsearch_project_root']}}/es-{{vars['cops_elasticsearch_version']}}"
+cops_elasticsearch_run: "{{vars['cops_elasticsearch_root']}}/run"
+cops_elasticsearch_bin: "{{vars['cops_elasticsearch_project_root']}}/bin"
+cops_elasticsearch_pluginsd: "{{vars['cops_elasticsearch_real_root']}}/plugins"
+cops_elasticsearch_modules: "{{vars['cops_elasticsearch_real_root']}}/modules"
+cops_elasticsearch_logs: "{{vars['cops_elasticsearch_data_root']}}/logs"
+cops_elasticsearch_data: "{{vars['cops_elasticsearch_data_root']}}/data"
+cops_elasticsearch_tmp: "{{vars['cops_elasticsearch_data_root']}}/tmp"
 #
 cops_elasticsearch_bind_host: "_local_,_site_"
 cops_elasticsearch_sha1_verify: true
@@ -206,12 +148,12 @@ cops_elasticsearch_filetest:
 # re-computed in tasks/vars.yml
 # ENVIRONMENT VARIABLES always win !
 cops_elasticsearch_mem: "2g"
-cops_elasticsearch_bn: "elasticsearch-{version}"
-cops_elasticsearch_tb: "{bn}.tar.gz"
-cops_elasticsearch_url: "{% if cops_elasticsearch_version[0] < '5' %}https://download.elasticsearch.org/elasticsearch/elasticsearch/{%else%}https://artifacts.elastic.co/downloads/elasticsearch/{%endif%}{tb}"
-cops_elasticsearch_sha1_url: "{url}.sha1"
+cops_elasticsearch_bn: "elasticsearch-{{vars['cops_elasticsearch_version']}}"
+cops_elasticsearch_tb: "{{vars['cops_elasticsearch_bn']}}.tar.gz"
+cops_elasticsearch_url: "{% if cops_elasticsearch_version[0] < '5' %}https://download.elasticsearch.org/elasticsearch/elasticsearch/{%else%}https://artifacts.elastic.co/downloads/elasticsearch/{%endif%}{{vars['cops_elasticsearch_tb']}}"
+cops_elasticsearch_sha1_url: "{{vars['cops_elasticsearch_url']}}.sha1"
 cops_elasticsearch_version_m: "{{cops_elasticsearch_version[0]}}"
-cops_elasticsearch_sha1file: "{real_root}/sha1_{version}"
+cops_elasticsearch_sha1file: "{{vars['cops_elasticsearch_real_root']}}/sha1_{{vars['cops_elasticsearch_version']}}"
 # set this to a specific interface if neccessary
 # cops_elasticsearch_es_bind_host: '127.0.0.1'
 # templates
@@ -223,124 +165,131 @@ cops_elasticsearch_config_tmpl: "../templates/elasticsearch.yml"
 cops_elasticsearch_logging: "../templates/logging.yml"
 cops_elasticsearch_log4j2: "../templates/log4j2.properties"
 cops_elasticsearch_jvmoptions: "../templates/jvm.options"
-cops_elasticsearch_service_cmd: "{root}/bin/run.sh"
+cops_elasticsearch_service_cmd: "{{vars['cops_elasticsearch_root']}}/bin/run.sh"
 cops_elasticsearch_limits_nofile: 65536
 cops_elasticsearch_limits_nproc: 4096
 # Reverse proxy
 cops_elasticsearch_default_vhost_is_default_server: false
-cops_elasticsearch_htpasswd: "/etc/nginx/{name}-htpasswd"
+cops_elasticsearch_htpasswd: "/etc/nginx/{{vars['cops_elasticsearch_name']}}-htpasswd"
 cops_elasticsearch_ssl_protected: false
 cops_elasticsearch_nginx: {}
 cops_elasticsearch_nginx_domain: "{{ansible_fqdn}}"
-cops_elasticsearch_nginx_basename: "corpus-{name}"
+cops_elasticsearch_nginx_basename: "corpus-{{vars['cops_elasticsearch_name']}}"
 cops_elasticsearch_nginx_is_default_server: true
 cops_elasticsearch_nginx_ssl_protected: "{{cops_elasticsearch_ssl_protected}}"
-cops_elasticsearch_nginx_htpasswd: "{htpasswd}"
-cops_elasticsearch_nginx_force_reload: true
+cops_elasticsearch_nginx_htpasswd: "{{vars['cops_elasticsearch_htpasswd']}}"
+cops_elasticsearch_nginx_services_nginx_reload_state: reloaded
 cops_elasticsearch_nginx_ssl_cert: ""
 cops_elasticsearch_nginx_ssl_key: ""
 cops_elasticsearch_nginx_loglevel: crit
-cops_elasticsearch_nginx_upstream_name: "{name}"
+cops_elasticsearch_nginx_upstream_name: "{{vars['cops_elasticsearch_name']}}"
 # Layout, files & configs
 cops_elasticsearch_stickymode: "2"
 cops_elasticsearch_files:
-  - {path: "{projects_dir}",
+  - {path: "{{vars['cops_elasticsearch_projects_dir']}}",
      owner: root, group: root, state: directory}
-  - {path: "{project_dir}",
+  - {path: "{{vars['cops_elasticsearch_project_dir']}}",
      owner: root, group: root, state: directory}
-  - {path: "{project_root}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{data_root}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{root}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{real_root}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{cfg}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{logs}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{tmp}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{modules}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{pluginsd}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{run}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{data}",
-     owner: "{user}", group: "{group}",
-     state: directory, mode: "{stickymode}755"}
-  - {path: "{root}/config",  src: "{cfg}", state: link, force: true}
-  - {path: "{root}/logs",    src: "{logs}", state: link, force: true}
-  - {path: "{root}/tmp",     src: "{tmp}", state: link, force: true}
-  - {path: "{root}/bin",     src: "{real_root}/bin", state: link, force: true}
-  - {path: "{root}/lib",     src: "{real_root}/lib", state: link, force: true}
-  - {path: "{root}/modules", src: "{real_root}/modules", state: link, force: true}
-  - {path: "{root}/plugins", src: "{pluginsd}", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_project_root']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_data_root']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_root']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_real_root']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_cfg']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_logs']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_tmp']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_modules']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_pluginsd']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_run']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_data']}}",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}",
+     state: directory, mode: "{{vars['cops_elasticsearch_stickymode']}}755"}
+  - {path: "{{vars['cops_elasticsearch_root']}}/config",  src: "{{vars['cops_elasticsearch_cfg']}}", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/logs",    src: "{{vars['cops_elasticsearch_logs']}}", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/tmp",     src: "{{vars['cops_elasticsearch_tmp']}}", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/bin",     src: "{{vars['cops_elasticsearch_real_root']}}/bin", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/lib",     src: "{{vars['cops_elasticsearch_real_root']}}/lib", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/modules", src: "{{vars['cops_elasticsearch_real_root']}}/modules", state: link, force: true}
+  - {path: "{{vars['cops_elasticsearch_root']}}/plugins", src: "{{vars['cops_elasticsearch_pluginsd']}}", state: link, force: true}
 cops_elasticsearch_configs:
   - {src: "../templates/app.service",
-     dest: "/etc/systemd/system/{service}.service",
+     dest: "/etc/systemd/system/{{vars['cops_elasticsearch_service']}}.service",
      mode: "0644",
-     owner: "{user}", group: "{group}"}
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
   - {src: "../templates/run.sh",
-     dest: "{real_root}/bin/run.sh", mode: "0755",
-     owner: "{user}", group: "{group}"}
+     dest: "{{vars['cops_elasticsearch_real_root']}}/bin/run.sh", mode: "0755",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
   - {src: "../templates/es.env",
-     dest: "{real_root}/bin/es.env", mode: "0644",
-     owner: "{user}", group: "{group}"}
-  - {src: "{logging}",
-     dest: "{cfg}/logging.yml", mode: "0644",
-     owner: "{user}", group: "{group}"}
-  - {src: "{log4j2}",
-     dest: "{cfg}/log4j2.properties", mode: "0644",
-     owner: "{user}", group: "{group}"}
-  - {src: "{jvmoptions}",
-     dest: "{cfg}/jvm.options", mode: "0644",
-     owner: "{user}", group: "{group}"}
-  - {src: "{config_tmpl}",
-     dest: "{cfg}/elasticsearch.yml", mode: "0644",
-     owner: "{user}", group: "{group}"}
+     dest: "{{vars['cops_elasticsearch_real_root']}}/bin/es.env", mode: "0644",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
+  - {src: "{{vars['cops_elasticsearch_logging']}}",
+     dest: "{{vars['cops_elasticsearch_cfg']}}/logging.yml", mode: "0644",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
+  - {src: "{{vars['cops_elasticsearch_log4j2']}}",
+     dest: "{{vars['cops_elasticsearch_cfg']}}/log4j2.properties", mode: "0644",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
+  - {src: "{{vars['cops_elasticsearch_jvmoptions']}}",
+     dest: "{{vars['cops_elasticsearch_cfg']}}/jvm.options", mode: "0644",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
+  - {src: "{{vars['cops_elasticsearch_config_tmpl']}}",
+     dest: "{{vars['cops_elasticsearch_cfg']}}/elasticsearch.yml", mode: "0644",
+     owner: "{{vars['cops_elasticsearch_user']}}", group: "{{vars['cops_elasticsearch_group']}}"}
 cops_elasticsearch_fixperms_configs:
   - {src: "../templates/fixperms.sh",
-     dest: "{fixperms}", mode: "0755",
+     dest: "{{vars['cops_elasticsearch_fixperms']}}", mode: "0755",
      owner: root, group: root}
 cops_elasticsearch_ep_configs:
   # script to reconfigure image before and after systemd is launched
   - {src: "../templates/reconfigure.sh",
-     dest: "{reconfigure}",
+     dest: "{{vars['cops_elasticsearch_reconfigure']}}",
      mode: "0755",
      owner: "root",
      group: "root"}
   - {src: "../templates/post-start-reconfigure.service",
-     dest: "/etc/systemd/system/post-start-{service}.service",
+     dest: "/etc/systemd/system/post-start-{{vars['cops_elasticsearch_service']}}.service",
      mode: "0644",
      owner: "root",
      group: "root"}
-  - {src: "{ep_template}",
+  - {src: "{{vars['cops_elasticsearch_ep_template']}}",
      dest: "/app_entry_point", mode: "0755",
      owner: root, group: root}
 # SystemD based reconfigure unit settings
-cops_elasticsearch_reconfigure_service_stderr: ""
-cops_elasticsearch_reconfigure_service_stdout: ""
+cops_elasticsearch_reconfigure_service_stderr: "journal{% if ansible_virtualization_type in ['docker']%}+console{%endif%}"
+cops_elasticsearch_reconfigure_service_stdout: "journal{% if ansible_virtualization_type in ['docker']%}+console{%endif%}"
 cops_elasticsearch_reconfigure_unit_after: "network.target elasticsearch.service"
 cops_elasticsearch_reconfigure_install_wantedby: "multi-user.target"
-cops_elasticsearch_reconfigure: "{project_dir}/reconfigure.sh"
-cops_elasticsearch_reconfigure_passenv: "ANSIBLE_PLAY ANSIBLE_FOLDER COPS_ROOT"
+cops_elasticsearch_reconfigure: "{{vars['cops_elasticsearch_provision_dir']}}/reconfigure.sh"
+cops_elasticsearch_reconfigure_passenv: >
+  COPS_ROOT COPS_IMG NO_SILENT NO_OUTPUT NONINTERACTIVE
+  ANSIBLE_CWD ANSIBLE_PLAY ANSIBLE_VARARGS ANSIBLE_ARGS
+  A_VAULTS_FOLDERS A_VAULTS A_EXTRA_VAULTS
+  A_INVENTORY A_ENV_NAME NO_DEFAULT_VAULTS
 cops_elasticsearch_reconfigure_verbosity: "-v"
-# Code synchronnisation settings
-cops_elasticsearch_push_codes_cwd: "{cops_cwd}"
-cops_elasticsearch_push_codes_sync_mode: "{{ cops_installer_mode in ['vagrant'] and 'rsync' or 'git' }}"
+# Code synchronnisation settings (FORCE_COPS_PROVISION_PUSH_CODE to force)
+cops_elasticsearch_push_codes_cwd: "{{vars['cops_cwd']}}"
+cops_elasticsearch_push_codes_sync_mode: "{{ (
+  cops_installer_mode in ['vagrant'] or
+  ansible_virtualization_type in ['docker']
+  ) and 'rsync' or 'git' }}"
 cops_elasticsearch_push_codes_file_tests:
   git: []
   rsync: [".git"]
@@ -351,17 +300,17 @@ cops_elasticsearch_push_codes_rsync_submodule_opts:
   git:   ["-azv", "--exclude", "*.retry"]
   rsync: ["-azv", "--exclude", "*.retry"]
 cops_elasticsearch_push_codes:
-- path: "{project_root}"
-  origin_path: "{push_codes_cwd}"
+- path: "{{vars['cops_elasticsearch_project_root']}}"
+  origin_path: "{{vars['cops_elasticsearch_push_codes_cwd']}}"
   sync_mode: "{{cops_elasticsearch_push_codes_sync_mode}}"
   rsync_opts: "{{cops_elasticsearch_push_codes_rsync_opts[cops_elasticsearch_push_codes_sync_mode]}}"
   file_tests: "{{cops_elasticsearch_push_codes_file_tests[cops_elasticsearch_push_codes_sync_mode]}}"
-  owner: "{user}"
-  group: "{group}"
-  sub_paths:
-  - path: local/setups.elasticsearch
-    rsync_opts: "{{cops_elasticsearch_push_codes_rsync_submodule_opts[cops_elasticsearch_push_codes_sync_mode]}}"
-    is_submodule: true
+  owner: "{{vars['cops_elasticsearch_user']}}"
+  group: "{{vars['cops_elasticsearch_group']}}"
+  sub_paths: []
+  #- path: local/setups.elasticsearch
+  #  rsync_opts: "{{cops_elasticsearch_push_codes_rsync_submodule_opts[cops_elasticsearch_push_codes_sync_mode]}}"
+  #  is_submodule: true
 # SSH deploy settings -> env vault
 cops_deploy_ssh_key_paths:
   deploy:

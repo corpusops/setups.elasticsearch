@@ -1,0 +1,11 @@
+---
+# Configure things before systemd launches
+- shell: |-
+   set -ex
+   {% set d=cops_elasticsearch_vars.data_root %}
+   if [ ! -e "{{d}}/config/elasticsearch.yml" ];then
+    rsync -avP "{{d}}.sample/" "{{d}}"
+    echo changedes >&2
+   fi
+  register: inites
+  changed_when: '"changedes" in inites.stderr'

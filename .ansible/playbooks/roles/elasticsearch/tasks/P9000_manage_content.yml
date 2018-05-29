@@ -1,0 +1,4 @@
+---
+- include_tasks: P6000_plugins.yml
+  tags: [cops_elasticsearch_s_manage_content_plugins]
+  when: [cops_elasticsearch_s_manage_content_plugins]

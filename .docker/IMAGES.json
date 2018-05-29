@@ -1,12 +1,16 @@
 {
-  "images": [
-    {
-      "builder_type": "packer",
-      "file": "2.3.3.json"
-    },
-    {
-      "builder_type": "packer",
-      "file": "5.4.0.json"
-    }
-  ]
+    "images": [ 
+        {
+            "tag": "corpusops/elasticsearch:5.4.0",
+            "builder_type": "docker",
+            "dockerfile": "Dockerfile",
+            "extra_args": "--build-arg COPS_IMG={tag}"
+        },
+        {
+            "tag": "corpusops/elasticsearch:2.3.3",
+            "builder_type": "docker",
+            "dockerfile": "Dockerfile",
+            "extra_args": "--build-arg COPS_IMG={tag}"
+        }
+    ]
 }

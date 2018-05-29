@@ -1,34 +1,26 @@
 ---
-- when: ["cops_elasticsearch_s_workers_service and corpusops_vars.has_services_manager"]
+- when: ["cops_elasticsearch_s_workers_service"]
   tags: ["cops_elasticsearch_s_workers_service"]
   become: true
   block:
   # activate the main app service
-  - service:
+  - cops_service:
       state: "{{cops_elasticsearch_vars.activated | ternary('started', 'stopped')}}"
       enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
       name: "{{item}}"
     with_items: "{{cops_elasticsearch_vars.services}}"
-  # this will fail on non systemd hosts on purpose !
-  # if we have activated the reconfigure units (docker mode essentially)
-  - systemd:
-      enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
-      daemon_reload: yes
-      name: "{{item}}"
-    with_items: "{{cops_elasticsearch_vars.reconfigure_services}}"
   # force a reload/restart here
   - shell: echo "force service reload/restart"
     notify: "{{cops_elasticsearch_vars.rhandlers}}"
   - meta: flush_handlers
 
-# Check reverse proxy is listening
-- tags: ["cops_elasticsearch_s_workers_checks"]
-  when: ["cops_elasticsearch_s_workers_checks"]
-  block: 
-  - uri:
-      url: "http://{{cops_elasticsearch_vars.query_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
-      return_content: true
-    register: cops_elasticsearch_check
-    until: "'elasticsearch' in cops_elasticsearch_check.content"
-    retries: 25
-    delay: 1
+# force reload
+- name: Reload nginx
+  include_role:
+    name: "corpusops.roles/nginx_control"
+    allow_duplicates: true
+  vars:
+    _corpusops_nginx_control:
+      state: "{{cops_elasticsearch_vars.services_nginx_reload_state}}"
+  tags: [cops_elasticsearch_s_workers_reverse_proxy_reload]
+  when: [cops_elasticsearch_s_workers_reverse_proxy_reload]

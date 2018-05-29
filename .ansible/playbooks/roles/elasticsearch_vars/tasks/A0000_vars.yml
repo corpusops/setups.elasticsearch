@@ -4,7 +4,6 @@
     cacheable: false
     # Set absolute path to app role (for templates path)
     cops_elasticsearch_vrole_path: "{{role_path.replace('_vars', '')}}"
-
 # Set the cops_elasticsearch_vars var from defaults/main.yml
 - name: "elasticsearch registry init"
   include_role: {name: corpusops.roles/vars_registry}
@@ -21,8 +20,9 @@
   tags: [elasticsearch, vars, elasticsearch_vars]
   no_log: "{{not (cops_vars_debug|default(false))}}"
 
-- include_jinja_vars:
-    name: __GLOBAL__
+# Post process some variables
+- name: "elasticsearch registry - postprocess"
+  include_jinja_vars:
     content: |
       ---
       {% set p = 'cops_elasticsearch_vars' %}

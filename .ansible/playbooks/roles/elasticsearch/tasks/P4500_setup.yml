@@ -1,14 +1,8 @@
 ---
-- name: configs
-  template:
-    dest: "{{item.dest}}"
-    src: "{{item.src|default('../templates{0}'.format(item.dest))}}"
-    force: "{{item.force|default(True)}}"
-    mode: "{{item.mode|default(omit)}}"
-    owner: "{{item.owner|default(omit)}}"
-    group: "{{item.group|default(omit)}}"
-  with_list: "{{cops_elasticsearch_vars.configs}}"
-  notify: "{{cops_elasticsearch_vars.rhandlers}}"
+# install custom config files
+- include_role: {name: corpusops.roles/configs, private: true}
+  vars:
+    cops_configs_templates: "{{cops_elasticsearch_vars.configs}}"
   tags: [cops_elasticsearch_s_setup_configs]
   when: [cops_elasticsearch_s_setup_configs]
 
@@ -25,3 +19,7 @@
     tags: [cops_elasticsearch_s_setup_files]
     when: "((cops_elasticsearch_version[0]|copsf_looseversion) >=
             ('5'|copsf_looseversion))"
+- tags: [cops_elasticsearch_s_setup_reverse_proxy]
+  when: [cops_elasticsearch_s_setup_reverse_proxy]
+  include_tasks: _setup_reverse_proxy.yml
+

@@ -1,6 +1,9 @@
 ---
 - tags: [cops_elasticsearch, elasticsearch]
   block:
+  - include_tasks: P1000_docker_reconfigure.yml
+    tags: [cops_elasticsearch_s_docker_reconfigure]
+    when: [cops_elasticsearch_s_docker_reconfigure]
   - include_tasks: P1000_users.yml
     tags: [cops_elasticsearch_s_users]
     when: [cops_elasticsearch_s_users]
@@ -22,12 +25,12 @@
   - include_tasks: P5000_workers.yml
     tags: [cops_elasticsearch_s_workers]
     when: [cops_elasticsearch_s_workers]
-  - include_tasks: P6000_plugins.yml
-    tags: [cops_elasticsearch_s_plugins]
-    when: [cops_elasticsearch_s_plugins]
-  - include_tasks: P7000_reverse_proxy.yml
-    tags: [cops_elasticsearch_s_reverse_proxy]
-    when: [cops_elasticsearch_s_reverse_proxy]
+  - include_tasks: P6500_healthchecks.yml
+    tags: [cops_elasticsearch_s_healthchecks]
+    when: [cops_elasticsearch_s_healthchecks]
+  - include_tasks: P9000_manage_content.yml
+    tags: [cops_elasticsearch_s_manage_content]
+    when: [cops_elasticsearch_s_manage_content]
   - include_tasks: G9000_fixperms.yml
     tags: [cops_elasticsearch_s_end_fixperms]
     when: [cops_elasticsearch_s_end_fixperms]

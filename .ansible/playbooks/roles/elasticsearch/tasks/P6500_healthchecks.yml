@@ -1,0 +1,9 @@
+# Check reverse proxy is listening
+- block:
+  - uri:
+      url: "http://{{cops_elasticsearch_vars.query_host}}:{{cops_elasticsearch_vars.env.ES_HTTP_PORT}}"
+      return_content: true
+    register: cops_elasticsearch_check
+    until: "'elasticsearch' in cops_elasticsearch_check.content"
+    retries: 25
+    delay: 1 

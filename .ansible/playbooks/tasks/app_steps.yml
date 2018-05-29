@@ -1,70 +1,116 @@
 ---
-- block:
-  - set_fact:
-      cacheable: false
-      only_steps: "{{only_steps|default(False)}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_s_setup_configs:            "{{cops_elasticsearch_s_setup_configs            |default(cops_elasticsearch_s_setup        |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_setup_files:              "{{cops_elasticsearch_s_setup_files              |default(cops_elasticsearch_s_setup        |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_plugins_install:          "{{cops_elasticsearch_s_plugins_install          |default(cops_elasticsearch_s_plugins      |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_prerequisites_es:         "{{cops_elasticsearch_s_prerequisites_es         |default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_prerequisites_jdk:        "{{cops_elasticsearch_s_prerequisites_jdk        |default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_prerequisites_pkgs:       "{{cops_elasticsearch_s_prerequisites_pkgs       |default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_prerequisites_archive_es: "{{cops_elasticsearch_s_prerequisites_archive_es |default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_reverse_proxy_install:    "{{cops_elasticsearch_s_reverse_proxy_install    |default(cops_elasticsearch_s_reverse_proxy|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_reverse_proxy_users:      "{{cops_elasticsearch_s_reverse_proxy_users      |default(cops_elasticsearch_s_reverse_proxy|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-      cops_elasticsearch_s_reverse_proxy_vhost:      "{{cops_elasticsearch_s_reverse_proxy_vhost      |default(cops_elasticsearch_s_reverse_proxy|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_s_users:          "{{cops_elasticsearch_s_users         |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_layout:         "{{cops_elasticsearch_s_layout        |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_first_fixperms: "{{cops_elasticsearch_s_first_fixperms|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_prerequisites:  "{{(
-        cops_elasticsearch_s_prerequisites_es or
-        cops_elasticsearch_s_prerequisites_jdk or
-        cops_elasticsearch_s_prerequisites_pkgs or
-        cops_elasticsearch_s_prerequisites_archive_es )}}"
-      cops_elasticsearch_s_workers:        "{{cops_elasticsearch_s_workers       |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_entry_point:    "{{cops_elasticsearch_s_entry_point   |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_end_fixperms:   "{{cops_elasticsearch_s_end_fixperms  |default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))}}"
-      cops_elasticsearch_s_setup: "{{(
-          cops_elasticsearch_s_setup_configs or
-          cops_elasticsearch_s_setup_files)}}"
-      cops_elasticsearch_s_plugins: "{{(
-          cops_elasticsearch_s_plugins_install)}}"
-      cops_elasticsearch_s_reverse_proxy:  "{{(
-        cops_elasticsearch_s_reverse_proxy_install or
-        cops_elasticsearch_s_reverse_proxy_users or
-        cops_elasticsearch_s_reverse_proxy_vhost )}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_lifecycle_app_level_1_steps: "{{(
-          cops_elasticsearch_s_users or
-          cops_elasticsearch_s_layout or
-          cops_elasticsearch_s_first_fixperms or
-          cops_elasticsearch_s_prerequisites or
-          cops_elasticsearch_s_setup or
-          cops_elasticsearch_s_workers or
-          cops_elasticsearch_s_plugins or
-          cops_elasticsearch_s_reverse_proxy or
-          cops_elasticsearch_s_entry_point or
-          cops_elasticsearch_s_end_fixperms)}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_lifecycle_app_push_code: "{{cops_elasticsearch_lifecycle_app|default(cops_elasticsearch_lifecycle_app_push_code|default(not only_steps))}}"
-      cops_elasticsearch_lifecycle_app_setup: "{{(cops_elasticsearch_lifecycle_app_setup|default(
-                                                (cops_elasticsearch_lifecycle_app|default(False)) or (
-                                                  cops_elasticsearch_lifecycle_app_level_1_steps)))}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_lifecycle_app: "{{(
-        cops_elasticsearch_lifecycle_app_push_code or
-        cops_elasticsearch_lifecycle_app_setup)}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_lifecycle_app_lc_1_steps: "{{(
-          cops_elasticsearch_lifecycle_app)}}"
-  - set_fact:
-      cacheable: false
-      cops_elasticsearch_s_vars: "{{cops_elasticsearch_s_vars|default(cops_elasticsearch_lifecycle_app_lc_1_steps)}}"
+- include_jinja_vars:
+    content: |-
+      {% set r = {} %}
+      {% set _ = r.update({'only_steps': only_steps|default(False)}) %}
+      {% set only_steps = r['only_steps'] %}
+      {% set _ = r.update({'cops_elasticsearch_has_reverse_proxy': cops_elasticsearch_has_reverse_proxy|default(True)}) %}
+      {% set cops_elasticsearch_has_reverse_proxy = r['cops_elasticsearch_has_reverse_proxy'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_dvhost': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_dvhost|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
+      {% set cops_elasticsearch_s_setup_reverse_proxy_dvhost = r['cops_elasticsearch_s_setup_reverse_proxy_dvhost'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_vhost': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_vhost|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
+      {% set cops_elasticsearch_s_setup_reverse_proxy_vhost = r['cops_elasticsearch_s_setup_reverse_proxy_vhost'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_users': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_users|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
+      {% set cops_elasticsearch_s_setup_reverse_proxy_users = r['cops_elasticsearch_s_setup_reverse_proxy_users'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_dvhost or cops_elasticsearch_s_setup_reverse_proxy_vhost or cops_elasticsearch_s_setup_reverse_proxy_users)}) %}
+      {% set cops_elasticsearch_s_setup_reverse_proxy = r['cops_elasticsearch_s_setup_reverse_proxy'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisistes_reverse_proxy_install': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_prerequisistes_reverse_proxy_install|default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_prerequisistes_reverse_proxy_install = r['cops_elasticsearch_s_prerequisistes_reverse_proxy_install'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_workers_reverse_proxy_reload': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_workers_reverse_proxy_reload|default(cops_elasticsearch_s_workers|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_workers_reverse_proxy_reload = r['cops_elasticsearch_s_workers_reverse_proxy_reload'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_files':  cops_elasticsearch_s_setup_files|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_setup_files = r['cops_elasticsearch_s_setup_files'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_configs':  cops_elasticsearch_s_setup_configs|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_setup_configs = r['cops_elasticsearch_s_setup_configs'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisites_pkgs':  cops_elasticsearch_s_prerequisites_pkgs|default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_prerequisites_pkgs = r['cops_elasticsearch_s_prerequisites_pkgs'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisites_archive_es':  cops_elasticsearch_s_prerequisites_archive_es|default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_prerequisites_archive_es = r['cops_elasticsearch_s_prerequisites_archive_es'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisites_es':  cops_elasticsearch_s_prerequisites_es|default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_prerequisites_es = r['cops_elasticsearch_s_prerequisites_es'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisites_jdk':  cops_elasticsearch_s_prerequisites_jdk|default(cops_elasticsearch_s_prerequisites|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_prerequisites_jdk = r['cops_elasticsearch_s_prerequisites_jdk'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_prerequisites': ( cops_elasticsearch_s_prerequisites_es or cops_elasticsearch_s_prerequisites_jdk or cops_elasticsearch_s_prerequisites_pkgs or cops_elasticsearch_s_prerequisites_archive_es or cops_elasticsearch_s_prerequisistes_reverse_proxy_install)}) %}
+      {% set cops_elasticsearch_s_prerequisites = r['cops_elasticsearch_s_prerequisites'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_docker_reconfigure': cops_elasticsearch_s_docker_reconfigure|default(False)}) %}
+      {% set cops_elasticsearch_s_docker_reconfigure = r['cops_elasticsearch_s_docker_reconfigure'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup': ( cops_elasticsearch_s_setup_configs or cops_elasticsearch_s_setup_files or cops_elasticsearch_s_setup_reverse_proxy or cops_elasticsearch_s_docker_reconfigure)}) %}
+      {% set cops_elasticsearch_s_setup = r['cops_elasticsearch_s_setup'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_users_user':   cops_elasticsearch_s_users_user|default(cops_elasticsearch_s_users|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_users_user = r['cops_elasticsearch_s_users_user'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_setup_config': cops_elasticsearch_s_setup_config|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_setup_config = r['cops_elasticsearch_s_setup_config'] %}
+      #h
+      {% set _ = r.update({'cops_elasticsearch_s_users_group':  cops_elasticsearch_s_users_group|default(cops_elasticsearch_s_users|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_users_group = r['cops_elasticsearch_s_users_group'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_users': cops_elasticsearch_s_users_user or cops_elasticsearch_s_users_group}) %}
+      {% set cops_elasticsearch_s_users = r['cops_elasticsearch_s_users'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_layout':  cops_elasticsearch_s_layout|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps)))}) %}
+      {% set cops_elasticsearch_s_layout = r['cops_elasticsearch_s_layout'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_fixperms_run': cops_elasticsearch_s_fixperms_run|default(cops_elasticsearch_s_first_fixperms|default(not only_steps) or cops_elasticsearch_s_end_fixperms|default(not only_steps))}) %}
+      {% set cops_elasticsearch_s_fixperms_configs = r['cops_elasticsearch_s_fixperms_configs'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_fixperms_configs': cops_elasticsearch_s_fixperms_configs|default(cops_elasticsearch_s_first_fixperms|default(not only_steps) or cops_elasticsearch_s_end_fixperms|default(not only_steps))}) %}
+      {% set cops_elasticsearch_s_fixperms_configs = r['cops_elasticsearch_s_fixperms_configs'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_end_fixperms':   (cops_elasticsearch_s_end_fixperms|default(not only_steps))}) %}
+      {% set cops_elasticsearch_s_end_fixperms = r['cops_elasticsearch_s_end_fixperms'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_first_fixperms': (cops_elasticsearch_s_first_fixperms|default(not only_steps))}) %}
+      {% set cops_elasticsearch_s_first_fixperms = r['cops_elasticsearch_s_first_fixperms'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_workers_service': cops_elasticsearch_s_workers_service|default(cops_elasticsearch_s_workers|default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_workers_service = r['cops_elasticsearch_s_workers_service'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_workers': cops_elasticsearch_s_workers_service or cops_elasticsearch_s_workers_reverse_proxy_reload}) %}
+      {% set cops_elasticsearch_s_workers = r['cops_elasticsearch_s_workers'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_healthchecks':   (cops_elasticsearch_s_healthchecks   |default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))))}) %}
+      {% set cops_elasticsearch_s_healthchecks = r['cops_elasticsearch_s_healthchecks'] %}
+      #
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_entry_point':   (cops_elasticsearch_s_entry_point   |default(cops_elasticsearch_lifecycle_app_setup|default(cops_elasticsearch_lifecycle_app|default(not only_steps))) and ansible_virtualization_type in ['docker'])}) %}
+      {% set cops_elasticsearch_s_entry_point = r['cops_elasticsearch_s_entry_point'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_manage_content_plugins': cops_elasticsearch_s_manage_content_plugins|default(cops_elasticsearch_s_manage_content|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))}) %}
+      {% set cops_elasticsearch_s_manage_content_plugins = r['cops_elasticsearch_s_manage_content_plugins'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_manage_content': (cops_elasticsearch_s_manage_content_plugins )}) %}
+      {% set cops_elasticsearch_s_manage_content = r['cops_elasticsearch_s_manage_content'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_lifecycle_app_level_1_steps': ( cops_elasticsearch_s_users or cops_elasticsearch_s_layout or cops_elasticsearch_s_first_fixperms or cops_elasticsearch_s_prerequisites or cops_elasticsearch_s_setup or cops_elasticsearch_s_workers or cops_elasticsearch_s_entry_point or cops_elasticsearch_s_manage_content or cops_elasticsearch_s_healthchecks or cops_elasticsearch_s_end_fixperms)}) %}
+      {% set cops_elasticsearch_lifecycle_app_level_1_steps = r['cops_elasticsearch_lifecycle_app_level_1_steps'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_lifecycle_app_push_code': cops_elasticsearch_lifecycle_app_push_code|default(cops_elasticsearch_lifecycle_app|default(not only_steps))}) %}
+      {% set cops_elasticsearch_lifecycle_app_push_code = r['cops_elasticsearch_lifecycle_app_push_code'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_lifecycle_app_setup': (cops_elasticsearch_lifecycle_app_setup|default( (cops_elasticsearch_lifecycle_app|default(False)) or ( cops_elasticsearch_lifecycle_app_level_1_steps)))}) %}
+      {% set cops_elasticsearch_lifecycle_app_setup = r['cops_elasticsearch_lifecycle_app_setup'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_lifecycle_app': ( cops_elasticsearch_lifecycle_app_push_code or cops_elasticsearch_lifecycle_app_setup)}) %}
+      {% set cops_elasticsearch_lifecycle_app = r['cops_elasticsearch_lifecycle_app'] %}
+      #
+      {% set _ = r.update({'cops_elasticsearch_s_vars': cops_elasticsearch_s_vars|default(cops_elasticsearch_lifecycle_app)}) %}
+      {% set cops_elasticsearch_s_vars = r['cops_elasticsearch_s_vars'] %}
+      #
+      {{ r | to_json }}

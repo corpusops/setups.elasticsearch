@@ -29,6 +29,3 @@
   become: yes
   become_user: "{{cops_elasticsearch_vars.user}}"
   changed_when: "'Installed plugin' in cops_elasticsearch_plugins_install.stderr"
-  when: [cops_elasticsearch_s_plugins_install]
-  tags: [cops_elasticsearch_s_plugins_install]
-
