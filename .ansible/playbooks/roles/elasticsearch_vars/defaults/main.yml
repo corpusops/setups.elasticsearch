@@ -173,6 +173,7 @@ cops_elasticsearch_default_vhost_is_default_server: false
 cops_elasticsearch_htpasswd: "/etc/nginx/{{vars['cops_elasticsearch_name']}}-htpasswd"
 cops_elasticsearch_ssl_protected: false
 cops_elasticsearch_nginx: {}
+cops_elasticsearch_nginx_install: "{{cops_elasticsearch_has_reverse_proxy}}"
 cops_elasticsearch_nginx_domain: "{{ansible_fqdn}}"
 cops_elasticsearch_nginx_basename: "corpus-{{vars['cops_elasticsearch_name']}}"
 cops_elasticsearch_nginx_is_default_server: true

@@ -13,6 +13,8 @@
   tags: [cops_elasticsearch_s_setup_reverse_proxy_dvhost]
   when: [cops_elasticsearch_s_setup_reverse_proxy_dvhost]
 
+# run even if cops_elasticsearch_has_reverse_proxy is false
+# to let the ES vhost be deinstalled
 - name: Generate APP virtualhost
   include_role: {name: "corpusops.roles/nginx_vhost"}
   vars: {_corpusops_nginx_vhost: "{{cops_elasticsearch_vars.nginx}}"}

@@ -22,6 +22,7 @@ x-image: &image_template
     cops_elasticsearch_s_setup: true
     cops_elasticsearch_users:
     - {user: admin,  password: "password4yZ8e4Ef8K824Sk"}
+    # cops_elasticsearch_has_reverse_proxy: false
   - |
     A_POSTCONFIGURE=---
     ---
@@ -35,6 +36,7 @@ x-image: &image_template
     cops_elasticsearch__databases:
     - db: "foo"
       owner: "foo"
+    # cops_elasticsearch_has_reverse_proxy: false
   command: >
     sh -c 'if [ "x$DOCKER_SKIP_START" != x ];
     then while true;do echo sleeping;sleep 65535;done

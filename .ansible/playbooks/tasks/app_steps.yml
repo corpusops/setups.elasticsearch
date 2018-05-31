@@ -10,7 +10,7 @@
       {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_dvhost': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_dvhost|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
       {% set cops_elasticsearch_s_setup_reverse_proxy_dvhost = r['cops_elasticsearch_s_setup_reverse_proxy_dvhost'] %}
       #
-      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_vhost': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_vhost|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
+      {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_vhost': cops_elasticsearch_s_setup_reverse_proxy_vhost|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps))))}) %}
       {% set cops_elasticsearch_s_setup_reverse_proxy_vhost = r['cops_elasticsearch_s_setup_reverse_proxy_vhost'] %}
       #
       {% set _ = r.update({'cops_elasticsearch_s_setup_reverse_proxy_users': cops_elasticsearch_has_reverse_proxy and (cops_elasticsearch_s_setup_reverse_proxy_users|default(cops_elasticsearch_s_setup_reverse_proxy|default(cops_elasticsearch_s_setup|default(cops_elasticsearch_lifecycle_app_setup|default(not only_steps)))))}) %}
