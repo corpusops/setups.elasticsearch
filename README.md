@@ -2,9 +2,7 @@
 
 ## USE/Install with makina-states
 - makina-state deployment (legacy) can be found in .salt
-    
-## Support development
-- [paypal](https://paypal.me/kiorky)
+
 
 ## corpusops/elasticsearch (CURRENT)
 ### Description
