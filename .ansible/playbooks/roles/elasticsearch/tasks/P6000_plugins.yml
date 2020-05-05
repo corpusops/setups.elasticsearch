@@ -19,7 +19,7 @@
         exit 0
       fi
       {% endfor %}
-  with_items: "{{cops_elasticsearch_vars.plugins.get(
+  loop: "{{cops_elasticsearch_vars.plugins.get(
       cops_elasticsearch_vars.version,
         cops_elasticsearch_vars.plugins.get(
           cops_elasticsearch_vars.version[0],

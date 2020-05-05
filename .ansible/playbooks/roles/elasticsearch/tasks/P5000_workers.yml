@@ -8,7 +8,7 @@
       state: "{{cops_elasticsearch_vars.activated | ternary('started', 'stopped')}}"
       enabled: "{{cops_elasticsearch_vars.activated | ternary(True, False)}}"
       name: "{{item}}"
-    with_items: "{{cops_elasticsearch_vars.services}}"
+    loop: "{{cops_elasticsearch_vars.services}}"
   # force a reload/restart here
   - shell: echo "force service reload/restart"
     notify: "{{cops_elasticsearch_vars.rhandlers}}"

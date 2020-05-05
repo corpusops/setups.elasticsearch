@@ -13,7 +13,7 @@
     file:
       path: "{{item}}"
       state: "absent"
-    with_items:
+    loop:
       - "{{cops_elasticsearch_cfg}}/logging.yml"
     changed_when: False
     tags: [cops_elasticsearch_s_setup_files]
